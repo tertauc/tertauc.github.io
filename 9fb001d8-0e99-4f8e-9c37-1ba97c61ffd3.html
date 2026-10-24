@@ -5,14 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>华佗，你几个意思？</title>
     <style>
-        /* === 基础与全局设定 === */
+        /* === 全局与变量设定 === */
         :root {
-            --paper-bg: #f2ead8;
+            --paper-bg: #f4ecd8;
             --ink-dark: #2c221e;
             --ink-light: #5d4b43;
-            --wood-border: #4e342e;
+            --wood-border: #3e2723;
             --accent-red: #c0392b;
             --accent-blue: #1e3a8a;
+            
+            /* 毛玻璃变量 */
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --glass-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
 
         html, body {
@@ -20,7 +25,6 @@
             padding: 0;
             width: 100vw;
             height: 100vh;
-            overflow: hidden;
             background-color: #1a1a1a; 
             background-image: radial-gradient(circle at center, #2c3e50 0%, #0f171e 100%);
             display: flex;
@@ -28,481 +32,437 @@
             align-items: center;
             font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
             color: var(--ink-dark);
-        }
-
-        /* === 档案板主体 === */
-        .announcement-board {
-            background-color: var(--paper-bg);
-            background-image: 
-                url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.05"/></svg>'),
-                radial-gradient(circle at 50% 0%, rgba(255,255,255,0.6) 0%, transparent 70%),
-                linear-gradient(rgba(200,180,150,0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(200,180,150,0.05) 1px, transparent 1px);
-            background-size: 150px, 100% 100%, 20px 20px, 20px 20px;
-            width: 98vw;
-            height: 98vh;
-            box-sizing: border-box;
-            border: 4px solid var(--wood-border);
-            border-radius: 4px;
-            box-shadow: 
-                0 15px 35px rgba(0,0,0,0.5),
-                inset 0 0 60px rgba(109, 76, 65, 0.15),
-                5px 5px 0px -2px var(--paper-bg),
-                5px 5px 0px 0px var(--wood-border),
-                10px 10px 0px -4px var(--paper-bg),
-                10px 10px 0px -2px var(--wood-border);
-            padding: 20px 35px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            transform-origin: center center;
-            animation: boardFadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-        }
-
-        @keyframes boardFadeIn {
-            from { opacity: 0; transform: scale(0.95) translateY(20px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        /* 四角装订钉 */
-        .nail { position: absolute; width: 16px; height: 16px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #b0bec5, #455a64); box-shadow: 2px 2px 4px rgba(0,0,0,0.4), inset -1px -1px 2px rgba(0,0,0,0.5); z-index: 10; }
-        .nail-tr { top: 8px; right: 8px; }
-        .nail-bl { bottom: 8px; left: 8px; }
-        .nail-br { bottom: 8px; right: 8px; }
-        .nail-tl { top: 8px; left: 8px; }
-
-        /* 红色印章 */
-        .seal {
-            position: absolute;
-            top: 25px;
-            right: 40px;
-            width: 90px;
-            height: 90px;
-            border: 3px solid rgba(192, 57, 43, 0.7);
-            border-radius: 50%;
-            color: rgba(192, 57, 43, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: "KaiTi", "STKaiti", serif;
-            font-size: 20px;
-            font-weight: bold;
-            transform: rotate(-20deg);
-            pointer-events: none;
-            line-height: 1.1;
-            text-align: center;
-            mix-blend-mode: multiply;
-            opacity: 0.85;
-            animation: sealStamp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.6s both;
-        }
-        .seal::before {
-            content: '';
-            position: absolute;
-            top: -5px; left: -5px; right: -5px; bottom: -5px;
-            border: 1px dashed rgba(192, 57, 43, 0.5);
-            border-radius: 50%;
-        }
-        @keyframes sealStamp {
-            0% { transform: scale(2.5) rotate(0deg); opacity: 0; }
-            100% { transform: scale(1) rotate(-20deg); opacity: 0.85; }
-        }
-
-        /* 头部 */
-        .board-header {
-            text-align: center;
-            border-bottom: 2px solid var(--ink-light);
-            padding-bottom: 12px;
-            margin-bottom: 15px;
-            position: relative;
-        }
-        .board-header h1 {
-            margin: 0;
-            font-family: "KaiTi", "STKaiti", "SimSun", serif;
-            font-size: 36px;
-            color: var(--ink-dark);
-            letter-spacing: 6px;
-            font-weight: bold;
-            text-shadow: 1px 1px 0px rgba(255,255,255,0.6);
-        }
-        .board-header p {
-            margin: 8px 0 0 0;
-            font-size: 13px;
-            color: var(--ink-light);
-            letter-spacing: 4px;
-        }
-        
-        /* 档案编号 */
-        .file-no {
-            position: absolute;
-            left: 0;
-            bottom: -12px;
-            background: var(--ink-dark);
-            color: var(--paper-bg);
-            font-family: monospace;
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 2px;
-            letter-spacing: 1px;
-        }
-
-        /* === 三列布局 === */
-        .columns-wrapper {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
-            flex: 1; 
             overflow: hidden; 
         }
 
-        .column {
+        /* 切换尺寸时的独立虚白毛玻璃遮罩 */
+        .mask-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(255, 255, 255, 0);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            z-index: 9998; 
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .mask-overlay.active {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        /* === 居中包裹器 === */
+        .board-wrapper {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* === 档案板本体 (固定基准宽度，由内容撑高) === */
+        .announcement-board {
+            width: 1300px; 
+            height: max-content; 
+            box-sizing: border-box;
+            
+            background-color: var(--paper-bg);
+            background-image: 
+                url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)" opacity="0.05"/></svg>'),
+                radial-gradient(circle at 10% 20%, rgba(192, 57, 43, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(30, 58, 138, 0.1) 0%, transparent 40%);
+            background-size: 150px, 100% 100%, 100% 100%;
+            
+            border: 8px solid var(--wood-border);
+            border-radius: 6px;
+            box-shadow: 
+                0 25px 60px rgba(0,0,0,0.8),
+                inset 0 0 80px rgba(109, 76, 65, 0.2),
+                6px 6px 0px -2px var(--paper-bg),
+                6px 6px 0px 0px var(--wood-border),
+                12px 12px 0px -4px var(--paper-bg),
+                12px 12px 0px -2px var(--wood-border);
+            padding: 30px 40px;
             display: flex;
             flex-direction: column;
+            position: relative;
+            
+            transform-origin: center center;
+            /* 初始给一个渐入动画 */
+            animation: boardEnter 0.6s ease-out forwards;
+        }
+
+        @keyframes boardEnter {
+            from { opacity: 0; filter: blur(5px); }
+            to { opacity: 1; filter: blur(0); }
+        }
+
+        /* 四角金属钉 */
+        .nail { position: absolute; width: 16px; height: 16px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #eceff1, #455a64 80%); box-shadow: 3px 3px 6px rgba(0,0,0,0.6), inset -2px -2px 3px rgba(0,0,0,0.5); z-index: 10; }
+        .nail-tl { top: 12px; left: 12px; }
+        .nail-tr { top: 12px; right: 12px; }
+        .nail-bl { bottom: 12px; left: 12px; }
+        .nail-br { bottom: 12px; right: 12px; }
+
+        /* 红色印章 */
+        .seal {
+            position: absolute; top: 25px; right: 40px; width: 90px; height: 90px;
+            border: 4px double rgba(192, 57, 43, 0.8); border-radius: 50%;
+            color: rgba(192, 57, 43, 0.85);
+            display: flex; justify-content: center; align-items: center;
+            font-family: "KaiTi", "STKaiti", serif; font-size: 22px; font-weight: bold;
+            transform: rotate(-15deg); pointer-events: none; line-height: 1.1;
+            text-align: center; mix-blend-mode: multiply; opacity: 0.9; z-index: 5;
+        }
+
+        /* === 头部 === */
+        .board-header {
+            text-align: center; border-bottom: 3px double var(--ink-light);
+            padding-bottom: 12px; margin-bottom: 20px; flex-shrink: 0; position: relative;
+        }
+        .board-header h1 {
+            margin: 0; font-family: "KaiTi", "STKaiti", "SimSun", serif;
+            font-size: 38px; color: var(--ink-dark); letter-spacing: 8px;
+            font-weight: bold; text-shadow: 1px 1px 0px rgba(255,255,255,0.9);
+        }
+        .board-header p {
+            margin: 10px 0 0 0; font-size: 14px; color: var(--ink-light);
+            letter-spacing: 5px; font-weight: bold;
+        }
+        .file-no {
+            position: absolute; left: 0; bottom: -12px; background: var(--ink-dark);
+            color: var(--paper-bg); font-family: monospace; font-size: 12px;
+            padding: 4px 12px; border-radius: 2px; letter-spacing: 1px;
+        }
+
+        /* === 网格内容区 === */
+        .columns-wrapper {
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px; 
+        }
+
+        .column {
+            display: flex; 
+            flex-direction: column;
             justify-content: flex-start; 
-            animation: colFadeIn 0.6s ease-out backwards;
-        }
-        .column:nth-child(1) { animation-delay: 0.15s; }
-        .column:nth-child(2) { animation-delay: 0.25s; }
-        .column:nth-child(3) { animation-delay: 0.35s; }
-        @keyframes colFadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            gap: 12px; 
         }
 
-        /* === 档案条目 === */
+        /* === 液态毛玻璃条目 === */
         .record-item {
-            font-size: 14px;
-            color: var(--ink-dark);
-            border-bottom: 1px dashed rgba(141, 110, 99, 0.5);
-            cursor: pointer;
-            transition: all 0.3s ease;
             position: relative;
-        }
-        .record-item:last-child { border-bottom: none; }
-
-        /* 悬浮效果 */
-        .record-item:hover {
-            background-color: rgba(255, 255, 255, 0.4);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            border-radius: 4px;
-            border-bottom-color: transparent;
-        }
-        
-        .record-item::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 15%;
-            height: 70%;
-            width: 0px;
-            background-color: var(--ink-light);
-            border-radius: 2px;
-            transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-        .record-item:hover::before,
-        .record-item[open]::before { width: 3px; }
-
-        /* 摘要样式 */
-        .record-item summary {
-            list-style: none;
-            padding: 9px 8px 9px 15px;
-            line-height: 1.5;
-            position: relative;
-            display: flex;
-            align-items: flex-start;
-            transition: transform 0.2s;
-        }
-        .record-item:hover summary { transform: translateX(4px); }
-        .record-item summary::-webkit-details-marker { display: none; }
-
-        /* 箭头图标 */
-        .record-item summary::after {
-            content: "+";
-            margin-left: auto;
-            padding-left: 10px;
-            font-family: monospace;
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--ink-light);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-        .record-item[open] summary::after {
-            content: "-";
-            transform: rotate(180deg);
-            color: var(--accent-red);
-        }
-
-        /* 高亮与颜色 */
-        .mention { 
-            color: var(--accent-blue); 
-            font-weight: bold; 
-            margin-right: 2px; 
-            background: rgba(30, 58, 138, 0.08);
-            padding: 0 4px;
-            border-radius: 3px;
-        }
-        .record-item.danger { color: var(--accent-red); font-weight: bold; }
-        .record-item.danger::before { background-color: var(--accent-red); }
-        .record-item.danger summary::after { color: var(--accent-red); }
-
-        /* === 展开区域 === */
-        .record-detail {
-            display: grid;
-            grid-template-rows: 0fr;
-            transition: grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .record-item[open] .record-detail { grid-template-rows: 1fr; }
-        
-        .record-detail-inner { overflow: hidden; }
-        
-        /* 展开后的完整原话内容 */
-        .full-text {
-            font-size: 13px;
-            color: #4a3b35;
-            background-color: rgba(210, 190, 160, 0.2);
-            padding: 12px;
-            margin: 0 15px 12px 15px;
-            border-radius: 4px;
-            border: 1px dashed rgba(141, 110, 99, 0.4);
+            padding: 12px 16px;
+            font-size: 15px;
             line-height: 1.6;
-            /* 动画 */
-            opacity: 0;
-            transform: translateY(-10px);
-            transition: all 0.3s ease 0.1s;
-        }
-        .record-item[open] .full-text {
-            opacity: 1;
-            transform: translateY(0);
+            color: var(--ink-dark);
+            cursor: pointer;
+            border-radius: 12px; 
+            
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px) saturate(120%);
+            -webkit-backdrop-filter: blur(12px) saturate(120%); 
+            border: 1px solid var(--glass-border);
+            box-shadow: 
+                var(--glass-shadow),
+                inset 0 1px 2px rgba(255, 255, 255, 0.8); 
+
+            transition: 
+                background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+                backdrop-filter 0.4s ease,
+                box-shadow 0.4s ease,
+                transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            user-select: none;
+            overflow: hidden;
+            z-index: 1;
         }
 
+        .record-item:hover {
+            background-color: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px) saturate(180%);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 
+                0 12px 30px rgba(0,0,0,0.1),
+                inset 0 2px 4px rgba(255, 255, 255, 1),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .record-item:active {
+            transform: translateY(0) scale(0.98);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .mention { color: var(--accent-blue); font-weight: bold; }
+        .record-item.danger { 
+            color: var(--accent-red); 
+            font-weight: bold; 
+            border-left: 3px solid var(--accent-red);
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(192,57,43,0.1) 100%);
+        }
+        .record-item.danger:hover {
+            background: linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(192,57,43,0.15) 100%);
+            box-shadow: 0 12px 30px rgba(192, 57, 43, 0.15), inset 0 2px 4px rgba(255, 255, 255, 1);
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            background-color: rgba(255, 255, 255, 0.6);
+            animation: rippleAnim 0.6s ease-out forwards;
+            pointer-events: none;
+            z-index: 0; 
+        }
+        .record-item.danger .ripple { background-color: rgba(192, 57, 43, 0.3); }
+        @keyframes rippleAnim {
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        /* === 全屏悬浮 (Modal) === */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 30, 0.6);
+            backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 99999; opacity: 0; visibility: hidden;
+            transition: opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), visibility 0.4s ease;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal-content-wrapper {
+            position: relative; width: 85%; max-width: 900px;
+            transform: scale(0.9) translateY(40px);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-overlay.active .modal-content-wrapper { transform: scale(1) translateY(0); }
+
+        .modal-content {
+            background-color: #fdfaf2;
+            background-image: 
+                linear-gradient(90deg, transparent 40px, #e0c8b0 40px, #e0c8b0 42px, transparent 42px),
+                linear-gradient(#e0c8b0 1px, transparent 1px);
+            background-size: 100% 100%, 100% 30px;
+            padding: 40px 50px 40px 60px;
+            border: 4px solid var(--wood-border); border-radius: 4px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 0 50px rgba(109, 76, 65, 0.1);
+            font-family: "KaiTi", "STKaiti", serif; font-size: 24px; line-height: 30px;
+            color: var(--ink-dark); text-align: justify; position: relative;
+            word-wrap: break-word; text-indent: 2em;
+        }
+        .modal-content .mention { color: var(--accent-blue); font-weight: bold; }
+        .modal-content.danger { color: var(--accent-red); font-weight: bold; }
+
+        .close-btn {
+            position: absolute; top: -15px; right: -15px; width: 44px; height: 44px;
+            background: var(--wood-border); color: #fff; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 100; line-height: 1;
+        }
+        .close-btn:hover { transform: scale(1.1) rotate(90deg); background: var(--accent-red); }
+
+        /* === 移动端适配 === */
+        @media (max-width: 768px) {
+            html, body { height: auto; min-height: 100vh; overflow-y: auto; display: block; }
+            .mask-overlay { display: none; }
+            .board-wrapper { height: auto; min-height: 100vh; padding: 15px; box-sizing: border-box; }
+            
+            .announcement-board {
+                width: 100%; 
+                transform: none !important; /* 强制取消缩放 */
+                animation: none;
+                padding: 15px; border-width: 4px;
+            }
+            .columns-wrapper { grid-template-columns: 1fr; gap: 12px; }
+            .seal { width: 60px; height: 60px; font-size: 14px; top: 15px; right: 15px; }
+            .board-header h1 { font-size: 26px; letter-spacing: 2px; }
+            
+            .record-item:hover { 
+                transform: none !important; 
+                box-shadow: var(--glass-shadow) !important; 
+                background-color: var(--glass-bg) !important;
+                backdrop-filter: blur(12px) !important;
+            }
+            
+            .modal-content-wrapper { width: 90%; }
+            .modal-content { padding: 25px 20px 25px 30px; font-size: 18px; line-height: 28px; background-size: 100% 100%, 100% 28px; }
+            .close-btn { top: -45px; right: 0; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="announcement-board" id="board">
-        <div class="nail nail-tl"></div>
-        <div class="nail nail-tr"></div>
-        <div class="nail nail-bl"></div>
-        <div class="nail nail-br"></div>
+    <div class="mask-overlay" id="maskOverlay"></div>
 
-        <div class="seal">绝密<br>档案</div>
+    <div class="board-wrapper" id="boardWrapper">
+        <div class="announcement-board" id="board">
+            <div class="nail nail-tl"></div>
+            <div class="nail nail-tr"></div>
+            <div class="nail nail-bl"></div>
+            <div class="nail nail-br"></div>
 
-        <div class="board-header">
-            <h1>华佗，你几个意思？</h1>
-            <p>服务器焦点问题 · 完整记录</p>
-            <div class="file-no">LOG-#9921</div>
-        </div>
+            <div class="seal">绝密<br>档案</div>
 
-        <div class="columns-wrapper">
-            <!-- 第一列 -->
-            <div class="column">
-                <details class="record-item danger">
-                    <summary>华佗，你几个意思？我改一个据点的名字，就花我 1000</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">
-                            华佗，你几个意思？我改一个据点的名字，就花我 1000。早知道不改了，还不如去买 2 块地。我要退钱！
-                        </div>
-                    </div></div>
-                </details>
-                <details class="record-item">
-                    <summary>别给我发神秘表情包，我要退钱，就压力怎么滴</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">
-                            别给我发神秘表情包，我要退钱。就压力怎么滴？神秘华佗又不回我退钱，别天天给我发神秘表情包，到底退不退钱？我要建世吞，世吞也不退。
-                        </div>
-                    </div></div>
-                </details>
-                <details class="record-item">
-                    <summary><span class="mention">@A机器傻子</span> 神的审美你不懂</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">@A机器傻子 神的审美你不懂。</div>
-                    </div></div>
-                </details>
-                <details class="record-item">
-                    <summary>这华佗要是给我发 1000，我直接在主城发不死图腾</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">这华佗要是给我发 1000，我直接在主城发不死图腾。</div>
-                    </div></div>
-                </details>
-                <details class="record-item danger">
-                    <summary><span class="mention">@A机器傻子</span> <span class="mention">@接代打服主工作</span> 我现在不缺这点钱...</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">
-                            @A机器傻子 @接代打服主工作 我现在不缺这点钱好吧，我现在在卖不祥之瓶和不死图腾。神秘华佗扣我 1000，合着我成无能的丈夫了。
-                        </div>
-                    </div></div>
-                </details>
-                <details class="record-item">
-                    <summary>我就在这里刷屏了，看是我手速快还是他手速快</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">我就在这里刷屏了，看是我手速快还是他手速快。有本事来打个决斗 😡</div>
-                    </div></div>
-                </details>
+            <div class="board-header">
+                <h1>华佗，你几个意思？</h1>
+                <p>服务器焦点问题 · 完整记录</p>
+                <div class="file-no">LOG-#9921</div>
             </div>
 
-            <!-- 第二列 -->
-            <div class="column">
-                <details class="record-item">
-                    <summary>神秘话筒刚才给我禁言了</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">神秘话筒刚才给我禁言了。</div>
-                    </div></div>
-                </details>
-                <details class="record-item danger">
-                    <summary>我靠，神秘卡加载页面做的什么勾八服务器？</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">我靠，神秘卡加载页面做的什么勾八服务器？什么勾八客户端。</div>
-                    </div></div>
-                </details>
-                <details class="record-item">
-                    <summary>我明明都打死他了，然后他用图腾...</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">我明明都打死他了，然后他用图腾，神秘华佗和我打决斗犯规。神秘华佗直接退。</div>
-                    </div></div>
-                </details>
-                <details class="record-item">
-                    <summary><span class="mention">@接代打服主工作</span> 你头像居然是肥美小正太</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">@接代打服主工作 你头像居然是肥美小正太。</div>
-                    </div></div>
-                </details>
-                <details class="record-item danger">
-                    <summary><span class="mention">@A机器傻子</span> 长这个屎样，我是三逼</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">@A机器傻子 长这个屎样。@A机器傻子 我是三逼，我是曹操专克。</div>
-                    </div></div>
-                </details>
-                <details class="record-item">
-                    <summary>华佗依旧隐身搞鬼，我看到了华佗在线</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">华佗依旧隐身搞鬼，我看到了华佗在线。</div>
-                    </div></div>
-                </details>
-                <details class="record-item">
-                    <summary><span class="mention">@接端跑路工作</span> 我绝对不会叫妈妈的</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">@接端跑路工作 我绝对不会叫妈妈的。</div>
-                    </div></div>
-                </details>
-                <details class="record-item">
-                    <summary>神人华佗在我家里放一大堆猫，放了几百个坚守者</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">神人华佗在我家里放一大堆猫，放了几百个坚守者。</div>
-                    </div></div>
-                </details>
-                <details class="record-item">
-                    <summary><span class="mention">@接压力服主工作</span> 你一直设也一样</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">@接压力服主工作 你一直设也一样。</div>
-                    </div></div>
-                </details>
-            </div>
+            <div class="columns-wrapper">
+                <!-- 第一列 -->
+                <div class="column">
+                    <div class="record-item danger">华佗，你几个意思？我改一个据点的名字，就花我 1000</div>
+                    <div class="record-item">早知道不改了，还不如去买 2 块地</div>
+                    <div class="record-item danger">我要退钱！别给我发神秘表情包，我要退钱</div>
+                    <div class="record-item">就压力怎么滴，神秘华佗又不回我退钱</div>
+                    <div class="record-item">到底退不退钱？我要建世吞，世吞也不退</div>
+                    <div class="record-item"><span class="mention">@A机器傻子</span> 神的审美你不懂</div>
+                    <div class="record-item">这华佗要是给我发 1000，我直接在主城发不死图腾</div>
+                    <div class="record-item danger"><span class="mention">@A机器傻子</span> <span class="mention">@接代打服主工作</span> 我现在不缺这点钱，在卖不祥之瓶和不死图腾</div>
+                    <!-- 新增条目 -->
+                    <div class="record-item danger">你快改 😡 我还等着传呢</div>
+                </div>
 
-            <!-- 第三列 -->
-            <div class="column">
-                <details class="record-item">
-                    <summary>不是不是，肯定是你服务器问题，我现在都进去了</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">不是不是，肯定是你服务器问题，我现在都进去了。不是又崩了？</div>
-                    </div></div>
-                </details>
-                <details class="record-item danger">
-                    <summary>别血口喷人，明明是你服务器不行</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">别血口喷人，明明是你服务器不行。</div>
-                    </div></div>
-                </details>
-                <details class="record-item">
-                    <summary>我现在已经是富豪了好吧，直接展示财富</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">我现在已经是富豪了好吧，直接展示财富。</div>
-                    </div></div>
-                </details>
-                <details class="record-item">
-                    <summary>我去我去，还好这机器人不会真执行命令，1 分没少</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">我去我去，还好这机器人不会真执行命令，1 分没少。不用了，智障永远教不会。</div>
-                    </div></div>
-                </details>
-                <details class="record-item">
-                    <summary>21ove_[附魔书 x1] kskbl 玩了附魔冲突了</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">21ove_[附魔书 x1] kskbl 玩了附魔冲突了。</div>
-                    </div></div>
-                </details>
-                <details class="record-item danger">
-                    <summary>21ove 这种附魔要重新打的 kskbl 能退吗</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">21ove 这种附魔要重新打的 kskbl 能退吗？</div>
-                    </div></div>
-                </details>
-                <details class="record-item">
-                    <summary>21ove_要重新打一套，附魔书给我，退你 1 块钱</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">21ove_要重新打一套。21ove_附魔书给我。21ove_退你 1 块钱。21ove_这几个附魔都需要重新打附魔。21ove_[锋利 x1]</div>
-                    </div></div>
-                </details>
-                <details class="record-item">
-                    <summary>kskbl 我去不早说，利刃跟锋利冲突好像</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">kskbl 我去不早说。21ove_利刃跟锋利冲突好像。</div>
-                    </div></div>
-                </details>
-                <details class="record-item">
-                    <summary>21ove_你没问啊，我以为你知道</summary>
-                    <div class="record-detail"><div class="record-detail-inner">
-                        <div class="full-text">21ove_你没问啊，我以为你知道。</div>
-                    </div></div>
-                </details>
+                <!-- 第二列 -->
+                <div class="column">
+                    <div class="record-item">神秘华佗扣我 1000，合着我成无能的丈夫了</div>
+                    <div class="record-item">我就在这里刷屏了，看是我手速快还是他手速快</div>
+                    <div class="record-item danger">有本事来打个决斗 😡</div>
+                    <div class="record-item">神秘话筒刚才给我禁言了</div>
+                    <div class="record-item danger">我靠，神秘卡加载页面做的什么勾八服务器？什么勾八客户端</div>
+                    <div class="record-item">我明明都打死他了，然后他用图腾，神秘华佗和我打决斗犯规</div>
+                    <div class="record-item">神秘华佗直接退</div>
+                    <div class="record-item"><span class="mention">@接代打服主工作</span> 你头像居然是肥美小正太</div>
+                    <div class="record-item danger"><span class="mention">@A机器傻子</span> 长这个屎样</div>
+                    <div class="record-item"><span class="mention">@A机器傻子</span> 我是三逼，我是曹操专克</div>
+                </div>
+
+                <!-- 第三列 -->
+                <div class="column">
+                    <div class="record-item">华佗依旧隐身搞鬼，我看到了华佗在线</div>
+                    <div class="record-item"><span class="mention">@接端跑路工作</span> 我绝对不会叫妈妈的</div>
+                    <div class="record-item">神人华佗在我家里放一大堆猫，放了几百个坚守者</div>
+                    <div class="record-item"><span class="mention">@接压力服主工作</span> 你一直设也一样</div>
+                    <div class="record-item danger">不是不是，肯定是你服务器问题，我现在都进去了。不是又崩了？别血口喷人</div>
+                    <div class="record-item">我现在已经是富豪了好吧，直接展示财富。我去我去，还好这机器人不会真执行命令，1 分没少</div>
+                    <div class="record-item">不用了，智障永远教不会</div>
+                    <div class="record-item">21ove_[附魔书 x1] kskbl 玩了附魔冲突了</div>
+                    <div class="record-item danger">21ove 这种附魔要重新打的 kskbl 能退吗</div>
+                    <div class="record-item">21ove_要重新打一套，附魔书给我，退你 1 块钱</div>
+                    <div class="record-item">21ove_这几个附魔都需要重新打附魔，利刃跟锋利冲突好像，你没问啊我以为你知道</div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 自动缩放与展开联动脚本 -->
+    <!-- 点击全屏悬浮窗 (Modal) -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content-wrapper">
+            <div class="close-btn" id="closeBtn">×</div>
+            <div class="modal-content" id="modalContent"></div>
+        </div>
+    </div>
+
     <script>
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-
+        /* === 1. 精准自适应缩放逻辑 === */
+        const wrapper = document.getElementById('boardWrapper');
         const board = document.getElementById('board');
+        const maskOverlay = document.getElementById('maskOverlay');
+        let resizeTimer;
 
-        function scaleBoard() {
+        function scaleBoard(useTransition = true) {
+            if (window.innerWidth <= 768) {
+                board.style.transform = 'none';
+                return; 
+            }
+
             board.style.transition = 'none';
             board.style.transform = 'scale(1)'; 
             
-            const contentHeight = board.scrollHeight;
-            const windowHeight = window.innerHeight;
+            const bWidth = board.offsetWidth;
+            const bHeight = board.offsetHeight;
+            const wWidth = window.innerWidth;
+            const wHeight = window.innerHeight;
+            const padding = 40; 
+            
+            const scaleX = (wWidth - padding) / bWidth;
+            const scaleY = (wHeight - padding) / bHeight;
+            const scale = Math.min(scaleX, scaleY);
             
             void board.offsetHeight;
-
-            board.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
-
-            if (contentHeight > windowHeight) {
-                const scale = (windowHeight / contentHeight) * 0.98;
-                board.style.transform = `scale(${scale})`;
+            
+            if (useTransition) {
+                board.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)';
             }
+            board.style.transform = `scale(${scale})`;
         }
 
-        const debouncedScale = debounce(scaleBoard, 50);
+        const resizeObserver = new ResizeObserver(() => {
+            scaleBoard(false); 
+        });
+        resizeObserver.observe(board);
 
-        const detailsElements = document.querySelectorAll('details');
-        detailsElements.forEach(detail => {
-            detail.addEventListener('toggle', () => {
-                requestAnimationFrame(() => {
-                    setTimeout(scaleBoard, 50); 
-                });
+        window.addEventListener('DOMContentLoaded', () => scaleBoard(false));
+        window.addEventListener('load', () => scaleBoard(false));
+        
+        window.addEventListener('resize', () => {
+            maskOverlay.classList.add('active');
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                scaleBoard(true); 
+                setTimeout(() => {
+                    maskOverlay.classList.remove('active');
+                }, 100);
+            }, 150);
+        });
+
+        /* === 2. 点击水波纹与全屏悬浮逻辑 === */
+        const items = document.querySelectorAll('.record-item');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalContent = document.getElementById('modalContent');
+        const closeBtn = document.getElementById('closeBtn');
+
+        items.forEach(item => {
+            item.addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                const ripple = document.createElement('span');
+                ripple.className = 'ripple';
+                
+                const size = Math.max(rect.width, rect.height) * 2;
+                ripple.style.width = ripple.style.height = `${size}px`;
+                ripple.style.left = `${x - size / 2}px`;
+                ripple.style.top = `${y - size / 2}px`;
+
+                this.appendChild(ripple);
+
+                setTimeout(() => {
+                    if (ripple.parentNode) ripple.parentNode.removeChild(ripple);
+                }, 600);
+
+                modalContent.innerHTML = this.innerHTML;
+                if (this.classList.contains('danger')) {
+                    modalContent.classList.add('danger');
+                } else {
+                    modalContent.classList.remove('danger');
+                }
+
+                modalOverlay.classList.add('active');
+                e.stopPropagation();
             });
         });
 
-        window.addEventListener('DOMContentLoaded', scaleBoard);
-        window.addEventListener('resize', debouncedScale);
+        function closeModal() { modalOverlay.classList.remove('active'); }
+        modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+        closeBtn.addEventListener('click', closeModal);
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && modalOverlay.classList.contains('active')) closeModal(); });
     </script>
 </body>
 </html>
