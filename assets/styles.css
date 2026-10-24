@@ -242,101 +242,6 @@ ul { margin: 0; padding: 0; list-style: none; }
   letter-spacing: -0.03em;
 }
 
-/* ========================= 语录入口 ========================= */
-.feature {
-  padding-bottom: 8px;
-}
-
-.feature-card {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 22px;
-  width: 100%;
-  padding: 26px 30px;
-  overflow: hidden;
-  text-align: left;
-  font: inherit;
-  color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  box-shadow: var(--shadow);
-  cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease,
-    border-color 0.25s ease, background-color 0.3s ease;
-}
-.feature-card:hover {
-  transform: translateY(-3px);
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-  box-shadow: var(--shadow-hover);
-}
-.feature-card:active { transform: translateY(-1px); }
-
-.feature-icon {
-  display: grid;
-  place-items: center;
-  width: 58px;
-  height: 58px;
-  flex: 0 0 auto;
-  overflow: hidden;
-  border-radius: 18px;
-  color: #fff;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  box-shadow: 0 10px 24px -12px var(--accent);
-}
-.feature-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.feature-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-.feature-title {
-  font-size: 1.3rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-.feature-sub {
-  color: var(--text-muted);
-  font-size: 14.5px;
-}
-
-.feature-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-left: auto;
-  padding: 8px 16px 8px 18px;
-  border-radius: 999px;
-  background: var(--accent);
-  color: var(--accent-contrast);
-  font-size: 14px;
-  font-weight: 600;
-  white-space: nowrap;
-  transition: gap 0.2s ease;
-}
-.feature-cta svg { width: 17px; height: 17px; }
-.feature-card:hover .feature-cta { gap: 10px; }
-
-.feature-mark {
-  position: absolute;
-  right: 110px;
-  top: -46px;
-  font-size: 11rem;
-  line-height: 1;
-  font-family: Georgia, "Times New Roman", serif;
-  color: var(--accent);
-  opacity: 0.07;
-  pointer-events: none;
-}
-
 /* ========================= 项目 ========================= */
 .section {
   padding: 48px 0 64px;
@@ -497,23 +402,7 @@ ul { margin: 0; padding: 0; list-style: none; }
   .hero { padding: 52px 0 32px; }
   .hero-inner { gap: 18px; }
   .hero-avatar img { width: 88px; height: 88px; }
-
-  .feature-card {
-    flex-wrap: wrap;
-    gap: 16px;
-    padding: 22px;
-  }
-  .feature-icon { width: 48px; height: 48px; border-radius: 14px; }
-  .feature-title { font-size: 1.15rem; }
-  .feature-sub { font-size: 13.5px; }
-  .feature-cta {
-    margin-left: 0;
-    margin-top: 2px;
-  }
-  .feature-mark { right: 12px; top: -30px; font-size: 8rem; }
-
   .section { padding: 36px 0 48px; }
-
 }
 
 @media (max-width: 420px) {
