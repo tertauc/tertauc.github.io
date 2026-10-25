@@ -31,7 +31,7 @@
             --accent-red: #c0392b;
             --accent-blue: #1e3a8a;
 
-            --page-bg: #1a1a1a;
+            --page-bg: #f4ecd8;
 
             --title-grad-a: #2c221e;
             --title-grad-b: #c0392b;
@@ -171,7 +171,7 @@
             user-select: none;
             -webkit-user-select: none;
             -webkit-touch-callout: none;
-            background: #0a0a0c;
+            background: var(--page-bg);
         }
 
         body {
@@ -207,41 +207,41 @@
            3. 入场虚化（从内向外扩散 → 从中向外解开）
            —— 只用 transform + opacity，合成层动画，120fps 友好。
            ============================================================ */
+        @property --reveal-radius {
+            syntax: "<length>";
+            inherits: false;
+            initial-value: 0px;
+        }
         .enter-veil {
             position: fixed;
-            left: calc(50% - 100vmax);
-            top: calc(50% - 100vmax);
-            width: 200vmax;
-            height: 200vmax;
-            border-radius: 50%;
+            inset: 0;
             pointer-events: none;
             z-index: 150000;
-            opacity: 0;
-            transform: scale(0.02);
+            opacity: 1;
+            background: rgba(10, 14, 20, 0.12);
             backdrop-filter: blur(22px) saturate(150%);
             -webkit-backdrop-filter: blur(22px) saturate(150%);
-            background: radial-gradient(
-                circle at center,
-                rgba(10, 14, 20, 0.46) 0%,
-                rgba(10, 14, 20, 0.20) 55%,
-                transparent 84%
-            );
-            will-change: transform, opacity;
-            animation: enterVeil 1.05s cubic-bezier(0.22, 0.9, 0.28, 1) forwards;
+            --reveal-radius: 0px;
+            -webkit-mask-image: radial-gradient(circle at center, transparent 0 var(--reveal-radius), #000 calc(var(--reveal-radius) + 1px));
+            mask-image: radial-gradient(circle at center, transparent 0 var(--reveal-radius), #000 calc(var(--reveal-radius) + 1px));
+            -webkit-mask-size: 100% 100%;
+            mask-size: 100% 100%;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            -webkit-mask-position: center;
+            mask-position: center;
+            will-change: opacity, mask-size;
         }
-
+        .enter-veil.is-running {
+            animation: enterVeil 820ms cubic-bezier(.2,.72,.24,1) forwards;
+        }
         @keyframes enterVeil {
-            0%   { transform: scale(0.02); opacity: 0; }
-            12%  { transform: scale(0.10); opacity: 1; }
-            52%  { transform: scale(0.92); opacity: 1; }
-            100% { transform: scale(1.04); opacity: 0; }
+            0% { opacity: 1; --reveal-radius: 0px; }
+            8% { opacity: 1; }
+            100% { opacity: 0; --reveal-radius: 150vmax; }
         }
-
         @media (prefers-reduced-motion: reduce) {
-            .enter-veil {
-                animation: none;
-                opacity: 0;
-            }
+            .enter-veil { display: none; }
         }
 
         /* ============================================================
@@ -255,7 +255,7 @@
             backface-visibility: hidden;
         }
         .page-bg--light {
-            background: radial-gradient(circle at center, #2c3e50 0%, #0f171e 100%);
+            background: radial-gradient(circle at center, #fffdf8 0%, #f4ecd8 72%, #e9ddc4 100%);
         }
         .page-bg--dark {
             background: radial-gradient(circle at center, #1a1d23 0%, #060608 100%);
@@ -279,14 +279,13 @@
             z-index: 9998;
             pointer-events: none;
             opacity: 0;
-            transition:
-                opacity 0.24s ease,
-                background-color 0.24s ease;
+            --scroll-blur: 7px;
+            transition: opacity 45ms linear, background-color 45ms linear;
         }
         .mask-overlay.active {
-            background: rgba(10, 14, 20, 0.40);
-            backdrop-filter: blur(18px) saturate(150%);
-            -webkit-backdrop-filter: blur(18px) saturate(150%);
+            background: rgba(10, 14, 20, 0.16);
+            backdrop-filter: blur(var(--scroll-blur)) saturate(125%);
+            -webkit-backdrop-filter: blur(var(--scroll-blur)) saturate(125%);
             opacity: 1;
         }
         body.is-resizing .column + .column::after,
@@ -337,7 +336,7 @@
             display: flex;
             flex-direction: column-reverse;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             pointer-events: none;
             width: max-content;
             max-width: calc(100vw - 24px);
@@ -360,15 +359,15 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.14);
             opacity: 0;
             transform: translate3d(0, -14px, 0) scale(0.94);
-            animation: toastCycle 3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            animation: toastCycle 2.65s cubic-bezier(0.22, 0.7, 0.2, 1) forwards;
             will-change: transform, opacity;
         }
 
         @keyframes toastCycle {
-            0%   { opacity: 0; transform: translate3d(0, -14px, 0) scale(0.94); }
-            10%  { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-            86%  { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-            100% { opacity: 0; transform: translate3d(0, -10px, 0) scale(0.96); }
+            0%   { opacity: 0; transform: translate3d(0, -10px, 0) scale(.97); }
+            12%  { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+            78%  { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+            100% { opacity: 0; transform: translate3d(0, -6px, 0) scale(.985); }
         }
 
         @keyframes toastCycleReduce {
@@ -378,7 +377,7 @@
 
         @media (prefers-reduced-motion: reduce) {
             .toast {
-                animation: toastCycleReduce 3s ease forwards;
+                animation: toastCycleReduce 2.65s ease forwards;
             }
         }
 
@@ -1370,12 +1369,19 @@
         (function initEnterVeil() {
             const veil = document.querySelector('.enter-veil');
             if (!veil) return;
-            const remove = () => {
-                if (veil.parentNode) veil.parentNode.removeChild(veil);
-            };
+            const remove = () => veil.remove();
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                remove();
+                return;
+            }
+            const start = () => requestAnimationFrame(() => {
+                // 等首帧内容绘制完成后启动，避免动画在网页可见前就已结束
+                requestAnimationFrame(() => veil.classList.add('is-running'));
+            });
+            if (document.readyState === 'complete') start();
+            else window.addEventListener('load', start, { once: true });
             veil.addEventListener('animationend', remove, { once: true });
-            // 兜底：reduced-motion 或异常情况下也保证移除
-            setTimeout(remove, 1600);
+            setTimeout(remove, 1400);
         })();
 
         /* ============================================================
@@ -1429,8 +1435,8 @@
                     if (el.parentNode) el.parentNode.removeChild(el);
                 };
                 el.addEventListener('animationend', cleanup, { once: true });
-                // 兜底：动画被禁用时也保证 3.4s 内移除
-                setTimeout(cleanup, 3400);
+                // 动画事件在后台标签页可能延迟，保留短兜底清理
+                setTimeout(cleanup, 3000);
             };
         })();
 
@@ -1673,23 +1679,49 @@
            ============================================================ */
         (function initResizeMask() {
             const mask = document.getElementById('maskOverlay');
-            let timer;
+            if (!mask) return;
+
+            let resizeTimer = 0;
+            let releaseTimer = 0;
             let lastW = window.innerWidth;
+            let lastY = window.scrollY;
+            let lastT = performance.now();
+
+            // 每次滚动都立即启用虚化；停止滚动后只延迟 55ms 解除。
+            const activate = (duration = 55) => {
+                mask.classList.add('active');
+                document.body.classList.add('is-resizing');
+                clearTimeout(releaseTimer);
+                releaseTimer = setTimeout(() => {
+                    mask.classList.remove('active');
+                    document.body.classList.remove('is-resizing');
+                }, duration);
+            };
 
             window.addEventListener('resize', () => {
                 if (window.innerWidth === lastW) return;
                 lastW = window.innerWidth;
-
-                // 任何宽度变化都显示蒙版
-                mask.classList.add('active');
-                document.body.classList.add('is-resizing');
-
-                clearTimeout(timer);
-                timer = setTimeout(() => {
+                activate(65);
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
                     mask.classList.remove('active');
                     document.body.classList.remove('is-resizing');
-                }, 340);
-            });
+                }, 80);
+            }, { passive: true });
+
+            window.addEventListener('scroll', () => {
+                const now = performance.now();
+                const y = window.scrollY;
+                const dt = Math.max(1, now - lastT);
+                const speed = Math.abs(y - lastY) / dt;
+                lastY = y;
+                lastT = now;
+
+                // 滑动时同步虚化，速度越快模糊越强；滚动停止后快速释放。
+                const blur = Math.min(11, 6 + speed * 3.5);
+                mask.style.setProperty('--scroll-blur', `${blur.toFixed(1)}px`);
+                activate(55);
+            }, { passive: true });
         })();
 
         /* ============================================================
