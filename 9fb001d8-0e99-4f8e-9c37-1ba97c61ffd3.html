@@ -9,8 +9,8 @@
         /* ============================================================
            0. 说明
            —— 120fps 核心策略：
-              · 所有入场 / 提示 / 主题切换动画只用 transform + opacity，
-                全部走 GPU 合成层，不触发布局与重绘。
+              · 交互动画优先使用 transform / opacity；滤镜仅在短时状态启用。
+              · 统一动效时长、缓动与清理逻辑，避免强制同步布局。
               · 页面与板子背景双层叠放，dark 层仅切 opacity。
               · 移除所有常驻 backdrop-filter（仅在必要瞬间启用）。
               · 新增：入场虚化（圆形扩散 + 淡出）、多 Toast 堆叠、
@@ -23,6 +23,12 @@
         :root,
         [data-theme="light"] {
             color-scheme: light;
+            /* 全站统一动效参数：优先 transform / opacity，避免布局属性参与动画 */
+            --motion-fast: 140ms;
+            --motion-base: 220ms;
+            --motion-slow: 300ms;
+            --motion-ease: cubic-bezier(.22, .68, 0, 1);
+            --motion-exit: cubic-bezier(.4, 0, 1, 1);
 
             --paper-bg: #f4ecd8;
             --ink-dark: #2c221e;
@@ -204,41 +210,26 @@
         }
 
         /* ============================================================
-           3. 入场虚化（从内向外扩散 → 从中向外解开）
-           —— 只用 transform + opacity，合成层动画，120fps 友好。
+           3. 入场虚化：降低模糊半径，柔和地从中心向外淡出
            ============================================================ */
-        @property --reveal-radius {
-            syntax: "<length>";
-            inherits: false;
-            initial-value: 0px;
-        }
         .enter-veil {
             position: fixed;
             inset: 0;
             pointer-events: none;
             z-index: 150000;
             opacity: 1;
-            background: rgba(10, 14, 20, 0.12);
-            backdrop-filter: blur(22px) saturate(150%);
-            -webkit-backdrop-filter: blur(22px) saturate(150%);
-            --reveal-radius: 0px;
-            -webkit-mask-image: radial-gradient(circle at center, transparent 0 var(--reveal-radius), #000 calc(var(--reveal-radius) + 1px));
-            mask-image: radial-gradient(circle at center, transparent 0 var(--reveal-radius), #000 calc(var(--reveal-radius) + 1px));
-            -webkit-mask-size: 100% 100%;
-            mask-size: 100% 100%;
-            -webkit-mask-repeat: no-repeat;
-            mask-repeat: no-repeat;
-            -webkit-mask-position: center;
-            mask-position: center;
-            will-change: opacity, mask-size;
+            background: rgba(10, 14, 20, 0.08);
+            backdrop-filter: blur(10px) saturate(115%);
+            -webkit-backdrop-filter: blur(10px) saturate(115%);
+            clip-path: circle(0% at 50% 50%);
+            will-change: clip-path, opacity;
         }
         .enter-veil.is-running {
-            animation: enterVeil 820ms cubic-bezier(.2,.72,.24,1) forwards;
+            animation: enterVeil 760ms cubic-bezier(.16, .72, .22, 1) forwards;
         }
         @keyframes enterVeil {
-            0% { opacity: 1; --reveal-radius: 0px; }
-            8% { opacity: 1; }
-            100% { opacity: 0; --reveal-radius: 150vmax; }
+            0% { opacity: 1; clip-path: circle(0% at 50% 50%); }
+            100% { opacity: 0; clip-path: circle(150% at 50% 50%); }
         }
         @media (prefers-reduced-motion: reduce) {
             .enter-veil { display: none; }
@@ -268,25 +259,25 @@
         }
 
         /* ============================================================
-           5. 缩放模糊遮罩（加强 + 全宽度触发）
+           5. 滚动 / 缩放虚化：固定低半径，动画只改变透明度
+           避免滚动期间反复修改 blur 值造成重绘抖动
            ============================================================ */
         .mask-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(10, 14, 20, 0);
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
             z-index: 9998;
             pointer-events: none;
             opacity: 0;
-            --scroll-blur: 7px;
-            transition: opacity 45ms linear, background-color 45ms linear;
+            visibility: hidden;
+            background: rgba(10, 14, 20, 0.045);
+            backdrop-filter: blur(3px) saturate(108%);
+            -webkit-backdrop-filter: blur(3px) saturate(108%);
+            transition: opacity 150ms var(--motion-ease), visibility 0s linear 150ms;
         }
         .mask-overlay.active {
-            background: rgba(10, 14, 20, 0.16);
-            backdrop-filter: blur(var(--scroll-blur)) saturate(125%);
-            -webkit-backdrop-filter: blur(var(--scroll-blur)) saturate(125%);
             opacity: 1;
+            visibility: visible;
+            transition: opacity 90ms linear, visibility 0s;
         }
         body.is-resizing .column + .column::after,
         body.modal-open .column + .column::after {
@@ -294,34 +285,34 @@
         }
 
         /* ============================================================
-           6. 顶部磨砂（加强）
+           6. 顶部磨砂：固定模糊层，羽化遮罩，避免激活瞬间切换滤镜
            ============================================================ */
         .top-scrim {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            height: 148px;
+            height: 176px;
             z-index: 950;
             pointer-events: none;
             opacity: 0;
-            transition: opacity 0.28s ease;
+            visibility: hidden;
             background: linear-gradient(
                 to bottom,
-                var(--scrim-tint) 0%,
-                color-mix(in srgb, var(--scrim-tint) 55%, transparent) 56%,
+                color-mix(in srgb, var(--scrim-tint) 22%, transparent) 0%,
+                color-mix(in srgb, var(--scrim-tint) 11%, transparent) 42%,
                 transparent 100%
             );
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-            -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 56%, transparent 100%);
-            mask-image: linear-gradient(to bottom, #000 0%, #000 56%, transparent 100%);
-            will-change: opacity;
+            backdrop-filter: blur(12px) saturate(118%);
+            -webkit-backdrop-filter: blur(12px) saturate(118%);
+            -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.78) 28%, rgba(0,0,0,.3) 64%, transparent 100%);
+            mask-image: linear-gradient(to bottom, #000 0%, rgba(0,0,0,.78) 28%, rgba(0,0,0,.3) 64%, transparent 100%);
+            transition: opacity 240ms var(--motion-ease), visibility 0s linear 240ms;
         }
         .top-scrim.active {
             opacity: 1;
-            backdrop-filter: blur(22px) saturate(170%);
-            -webkit-backdrop-filter: blur(22px) saturate(170%);
+            visibility: visible;
+            transition: opacity 240ms var(--motion-ease), visibility 0s;
         }
 
         /* ============================================================
@@ -359,26 +350,24 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.14);
             opacity: 0;
             transform: translate3d(0, -14px, 0) scale(0.94);
-            animation: toastCycle 2.65s cubic-bezier(0.22, 0.7, 0.2, 1) forwards;
-            will-change: transform, opacity;
+            animation: toastCycle 2.7s var(--motion-ease) both;
+            contain: layout style;
         }
 
         @keyframes toastCycle {
-            0%   { opacity: 0; transform: translate3d(0, -10px, 0) scale(.97); }
-            12%  { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-            78%  { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-            100% { opacity: 0; transform: translate3d(0, -6px, 0) scale(.985); }
+            0%   { opacity: 0; transform: translate3d(0, -8px, 0) scale(.985); }
+            10%  { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+            82%  { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+            100% { opacity: 0; transform: translate3d(0, -4px, 0) scale(.99); }
         }
 
-        @keyframes toastCycleReduce {
-            0%, 90% { opacity: 1; transform: none; }
-            100%    { opacity: 0; transform: none; }
+        @keyframes toastCycleReduced {
+            0%, 12%, 82% { opacity: 1; }
+            100% { opacity: 0; }
         }
-
         @media (prefers-reduced-motion: reduce) {
-            .toast {
-                animation: toastCycleReduce 2.65s ease forwards;
-            }
+            .toast { animation: toastCycleReduced 1.8s linear both; }
+            .ripple { display: none; animation: none; }
         }
 
         /* ============================================================
@@ -391,6 +380,10 @@
             z-index: 100000;
             border-radius: 999px;
             outline: none;
+        }
+
+        .theme-thumb.no-transition {
+            transition: none !important;
         }
 
         .theme-switcher-track {
@@ -873,7 +866,7 @@
             border-radius: 50%;
             transform: scale(0);
             background-color: rgba(255, 255, 255, 0.7);
-            animation: rippleAnim 0.6s ease-out forwards;
+            animation: rippleAnim 420ms var(--motion-ease) forwards;
             pointer-events: none;
             z-index: 0;
         }
@@ -883,7 +876,7 @@
         }
 
         @keyframes rippleAnim {
-            to { transform: scale(4); opacity: 0; }
+            to { transform: scale(3.5); opacity: 0; }
         }
 
         /* ============================================================
@@ -895,8 +888,8 @@
             height: 100vh;
             height: 100dvh;
             background: var(--overlay-bg);
-            backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -904,18 +897,14 @@
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
-            transition:
-                opacity 0.28s cubic-bezier(0.25, 0.8, 0.25, 1),
-                visibility 0s linear 0.28s;
+            transition: opacity var(--motion-base) var(--motion-ease), visibility 0s linear var(--motion-base);
         }
 
         .modal-overlay.active {
             opacity: 1;
             visibility: visible;
             pointer-events: auto;
-            transition:
-                opacity 0.28s cubic-bezier(0.25, 0.8, 0.25, 1),
-                visibility 0s linear 0s;
+            transition: opacity var(--motion-base) var(--motion-ease), visibility 0s;
         }
 
         .modal-content-wrapper {
@@ -927,13 +916,15 @@
             min-height: 0;
             display: flex;
             flex-direction: column;
-            transform: scale(0.9) translateY(40px);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            will-change: transform;
+            opacity: 0;
+            transform: translate3d(0, 14px, 0) scale(.985);
+            transition: transform 240ms var(--motion-ease), opacity 180ms ease-out;
+            will-change: transform, opacity;
         }
 
         .modal-overlay.active .modal-content-wrapper {
-            transform: scale(1) translateY(0);
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(1);
         }
 
         .modal-content {
@@ -1048,17 +1039,6 @@
             color: #fff;
             box-shadow: 0 4px 16px color-mix(in srgb, var(--accent-blue) 45%, transparent);
         }
-        .modal-copy.pop {
-            animation: copyPop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        @keyframes copyPop {
-            0%   { transform: scale(1); }
-            32%  { transform: scale(0.84); }
-            66%  { transform: scale(1.10); }
-            100% { transform: scale(1); }
-        }
-
         .close-btn {
             position: absolute;
             top: clamp(-16px, -1.4vw, -12px);
@@ -1077,20 +1057,19 @@
             line-height: 1;
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            transition:
-                transform 0.28s cubic-bezier(0.25, 0.8, 0.25, 1),
-                background-color 0.28s ease;
+            /* 关闭按钮固定位置：只过渡颜色，不做位移、缩放或旋转 */
+            transition: background-color 180ms ease, box-shadow 180ms ease;
             z-index: 100;
             -webkit-tap-highlight-color: transparent;
         }
         .close-btn .close-text { display: none; }
 
         .close-btn:hover {
-            transform: scale(1.1) rotate(90deg);
+            transform: none;
             background: var(--accent-red);
         }
         .close-btn:active {
-            transform: scale(0.95);
+            transform: none;
         }
         .close-btn:focus-visible {
             outline: 2px solid var(--accent-blue);
@@ -1147,11 +1126,11 @@
             .close-btn .close-glyph { display: none; }
             .close-btn .close-text { display: inline; }
             .close-btn:hover {
-                transform: translateX(-50%) scale(1.05);
+                transform: translateX(-50%);
                 background: var(--accent-red);
             }
             .close-btn:active {
-                transform: translateX(-50%) scale(0.96);
+                transform: translateX(-50%);
             }
 
             .modal-content {
@@ -1211,7 +1190,7 @@
                 letter-spacing: 2px;
             }
 
-            .top-scrim { height: 120px; }
+            .top-scrim { height: 144px; }
         }
 
         @media (hover: none) {
@@ -1235,8 +1214,15 @@
             }
 
             .theme-thumb,
-            .modal-content-wrapper {
+            .modal-content-wrapper,
+            .modal-overlay,
+            .top-scrim,
+            .mask-overlay {
                 transition: none;
+            }
+            .modal-content-wrapper {
+                transform: none;
+                opacity: 1;
             }
 
             .record-item {
@@ -1247,11 +1233,255 @@
                 transform: none;
             }
 
-            .modal-copy.pop {
-                animation: none;
-            }
         }
-    </style>
+    
+
+        /* ============================================================
+           统一柔和动效层：降低位移幅度、消除弹簧过冲、统一进出节奏
+           ============================================================ */
+        :root,
+        [data-theme="light"],
+        [data-theme="dark"] {
+            --motion-fast: 190ms;
+            --motion-base: 320ms;
+            --motion-slow: 440ms;
+            --motion-ease: cubic-bezier(.22, .72, .18, 1);
+            --motion-exit: cubic-bezier(.4, 0, .2, 1);
+        }
+
+        /* 页面入场：更轻的遮罩与更长的柔和扩散 */
+        .enter-veil {
+            background: rgba(10, 14, 20, .075);
+            backdrop-filter: blur(15px) saturate(112%);
+            -webkit-backdrop-filter: blur(15px) saturate(112%);
+        }
+        .enter-veil.is-running {
+            animation-duration: 1080ms;
+            animation-timing-function: cubic-bezier(.18, .62, .22, 1);
+        }
+
+        /* 顶部磨砂与滚动虚化：渐入渐出，不突然开关 */
+        .top-scrim,
+        .top-scrim.active {
+            transition: opacity 360ms cubic-bezier(.22, .72, .18, 1), visibility 0s linear 360ms;
+        }
+        .top-scrim.active { transition-delay: 0s; }
+        .mask-overlay,
+        .mask-overlay.active {
+            transition: opacity 190ms cubic-bezier(.22, .72, .18, 1), visibility 0s linear 190ms;
+        }
+        .mask-overlay.active { transition-delay: 0s; }
+
+        /* Toast：轻轻浮入，不缩放弹跳；离场不往回跳 */
+        .toast {
+            animation-duration: 3.05s;
+            animation-timing-function: cubic-bezier(.22, .72, .18, 1);
+            transform-origin: center top;
+        }
+        @keyframes toastCycle {
+            0%   { opacity: 0; transform: translate3d(0, 7px, 0) scale(.992); }
+            13%  { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+            82%  { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+            100% { opacity: 0; transform: translate3d(0, -3px, 0) scale(.998); }
+        }
+
+        /* 弹窗：缩短位移，弱化缩放，背景淡入与面板进场更一致 */
+        .modal-overlay,
+        .modal-overlay.active {
+            transition: opacity 300ms cubic-bezier(.22, .72, .18, 1), visibility 0s linear 300ms;
+        }
+        .modal-overlay.active { transition-delay: 0s; }
+        .modal-content-wrapper {
+            opacity: 0;
+            transform: translate3d(0, 8px, 0) scale(.992);
+            transition:
+                transform 360ms cubic-bezier(.22, .72, .18, 1),
+                opacity 300ms cubic-bezier(.22, .72, .18, 1);
+            will-change: transform, opacity;
+        }
+        .modal-overlay.active .modal-content-wrapper {
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+
+        /* 面板与列表进入：降低距离和对比，避免突然“弹上来” */
+        .board-wrapper,
+        .board-shell {
+            animation-timing-function: cubic-bezier(.22, .72, .18, 1);
+        }
+        .board-wrapper { animation-duration: 680ms; }
+        @keyframes boardEnter {
+            from { opacity: 0; transform: translate3d(0, 8px, 0) scale(.996); }
+            to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+        }
+
+        /* 水波纹更淡、更慢，避免白色圆环瞬间刺眼 */
+        .ripple {
+            background-color: rgba(255, 255, 255, .34);
+            animation-duration: 620ms;
+            animation-timing-function: cubic-bezier(.16, .72, .24, 1);
+        }
+        @keyframes rippleAnim {
+            0% { transform: scale(.08); opacity: .42; }
+            100% { transform: scale(2.7); opacity: 0; }
+        }
+        .record-item.danger .ripple {
+            background-color: color-mix(in srgb, var(--accent-red) 18%, transparent);
+        }
+
+        /* 主题滑块取消明显的弹簧回弹 */
+        .theme-thumb {
+            transition: transform 420ms cubic-bezier(.22, .72, .18, 1);
+        }
+        .modal-copy,
+        .close-btn {
+            transition-timing-function: cubic-bezier(.22, .72, .18, 1);
+        }
+        .modal-copy:active { transform: scale(.97); }
+        .close-btn:hover { transform: scale(1.035) rotate(45deg); }
+        .close-btn:active { transform: scale(.98); }
+
+        /* 交互控件的悬停反馈改为微幅变化，避免突然放大 */
+        .record-item,
+        .theme-switcher-track,
+        .modal-copy,
+        .close-btn {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .record-item {
+            transition-duration: 300ms;
+            transition-timing-function: cubic-bezier(.22, .72, .18, 1);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .enter-veil,
+            .enter-veil.is-running,
+            .toast,
+            .ripple,
+            .board-wrapper,
+            .board-shell {
+                animation: none !important;
+            }
+            .modal-overlay,
+            .modal-overlay.active,
+            .modal-content-wrapper,
+            .top-scrim,
+            .top-scrim.active,
+            .mask-overlay,
+            .mask-overlay.active,
+            .theme-thumb,
+            .modal-copy,
+            .close-btn,
+            .record-item {
+                transition-duration: .01ms !important;
+            }
+            .enter-veil { display: none !important; }
+        }
+
+
+
+        /* 最终修正：关闭按钮始终固定在弹窗右上角，不做位移、缩放或旋转 */
+        .modal-content-wrapper { position: relative; }
+        .close-btn,
+        .close-btn:hover,
+        .close-btn:active {
+            top: 12px !important;
+            right: 12px !important;
+            bottom: auto !important;
+            left: auto !important;
+            width: 40px !important;
+            min-width: 40px !important;
+            max-width: 40px !important;
+            height: 40px !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
+            transform: none !important;
+            translate: none !important;
+            rotate: none !important;
+            scale: none !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 50% !important;
+            transition: background-color 180ms ease, color 180ms ease, box-shadow 180ms ease !important;
+        }
+        .close-btn .close-glyph { display: inline !important; }
+        .close-btn .close-text { display: none !important; }
+        .close-btn:hover {
+            background: var(--accent-red) !important;
+            box-shadow: 0 5px 14px rgba(0, 0, 0, .22) !important;
+        }
+        .close-btn:active {
+            background: var(--accent-red) !important;
+            box-shadow: 0 2px 7px rgba(0, 0, 0, .18) !important;
+        }
+
+
+
+        /* 最终修正：窄屏关闭按钮在弹窗底部水平居中，不使用 translateX 定位 */
+        @media (max-width: 640px) {
+            .modal-content-wrapper { position: relative !important; }
+            .close-btn,
+            .close-btn:hover,
+            .close-btn:active {
+                position: absolute !important;
+                top: auto !important;
+                right: 0 !important;
+                bottom: calc(env(safe-area-inset-bottom, 0px) + 10px) !important;
+                left: 0 !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+                width: 88px !important;
+                min-width: 88px !important;
+                max-width: 88px !important;
+                height: 36px !important;
+                padding: 0 14px !important;
+                transform: none !important;
+                translate: none !important;
+                rotate: none !important;
+                scale: none !important;
+                border-radius: 999px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+            .close-btn .close-glyph { display: none !important; }
+            .close-btn .close-text { display: inline !important; }
+        }
+
+        /* 入场虚化最终修正：使用宽羽化径向遮罩，避免 clip-path 产生硬边 */
+        @property --startup-reveal-radius {
+            syntax: "<percentage>";
+            inherits: false;
+            initial-value: 0%;
+        }
+        .enter-veil,
+        .enter-veil.is-running {
+            clip-path: none !important;
+            -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent 0%, transparent var(--startup-reveal-radius, 0%), rgba(0, 0, 0, .82) calc(var(--startup-reveal-radius, 0%) + 24%));
+            mask-image: radial-gradient(circle at 50% 50%, transparent 0%, transparent var(--startup-reveal-radius, 0%), rgba(0, 0, 0, .82) calc(var(--startup-reveal-radius, 0%) + 24%));
+            -webkit-mask-size: 100% 100%;
+            mask-size: 100% 100%;
+            -webkit-mask-repeat: no-repeat;
+            mask-repeat: no-repeat;
+            background: rgba(10, 14, 20, .045) !important;
+            -webkit-backdrop-filter: blur(8px) saturate(108%) !important;
+            backdrop-filter: blur(8px) saturate(108%) !important;
+            will-change: opacity, --startup-reveal-radius;
+        }
+        .enter-veil.is-running {
+            animation: startupRevealSoft 1450ms cubic-bezier(.18, .55, .24, 1) forwards !important;
+        }
+        @keyframes startupRevealSoft {
+            0% { opacity: .78; --startup-reveal-radius: 0%; }
+            18% { opacity: .72; }
+            100% { opacity: 0; --startup-reveal-radius: 125%; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .enter-veil, .enter-veil.is-running { display: none !important; animation: none !important; }
+        }
+
+</style>
 </head>
 <body data-page-node-id="BM6v9QU9ykHOJ0KP6hrWCl">
 
@@ -1348,7 +1578,7 @@
         </div>
     </div>
 
-    <div data-page-node-id="9HZnd3SBsGUDlJKoNFQFKG" aria-label="档案记录详情" aria-modal="true" class="modal-overlay" id="modalOverlay" role="dialog">
+    <div data-page-node-id="9HZnd3SBsGUDlJKoNFQFKG" aria-label="档案记录详情" aria-modal="true" aria-hidden="true" class="modal-overlay" id="modalOverlay" role="dialog">
         <div data-page-node-id="fPTC4VM5ZyKEQXTRj0HXkd" class="modal-content-wrapper">
             <button data-page-node-id="tAFzlGa2ND7U92WCBN4yom" aria-label="关闭详情" class="close-btn" id="closeBtn" type="button">
                 <span data-page-node-id="ONjax7OScbMwHzI21CPJH7" aria-hidden="true" class="close-glyph"><!--pnid:hhIlJwoOS0tFM2iu7cfO0i-->×</span><span data-page-node-id="VjMWATw2XAr1UMeKLGPke1" class="close-text"><!--pnid:zHRva9tmJ2CxQAwAJhgVLx-->关闭</span>
@@ -1369,19 +1599,35 @@
         (function initEnterVeil() {
             const veil = document.querySelector('.enter-veil');
             if (!veil) return;
-            const remove = () => veil.remove();
+            let fallbackTimer = 0;
+            let started = false;
+            const remove = () => {
+                if (fallbackTimer) clearTimeout(fallbackTimer);
+                veil.removeEventListener('animationend', onEnd);
+                veil.remove();
+            };
+            const onEnd = (event) => {
+                if (event.target === veil && event.animationName === 'enterVeil') remove();
+            };
+            fallbackTimer = window.setTimeout(remove, 1800);
+            const start = () => {
+                if (started || !veil.isConnected) return;
+                clearTimeout(fallbackTimer);
+                started = true;
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    if (!veil.isConnected) return;
+                    veil.addEventListener('animationend', onEnd);
+                    veil.classList.add('is-running');
+                    fallbackTimer = window.setTimeout(remove, 1100);
+                }));
+            };
             if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                 remove();
-                return;
+            } else if (document.readyState === 'complete') {
+                start();
+            } else {
+                window.addEventListener('load', start, { once: true });
             }
-            const start = () => requestAnimationFrame(() => {
-                // 等首帧内容绘制完成后启动，避免动画在网页可见前就已结束
-                requestAnimationFrame(() => veil.classList.add('is-running'));
-            });
-            if (document.readyState === 'complete') start();
-            else window.addEventListener('load', start, { once: true });
-            veil.addEventListener('animationend', remove, { once: true });
-            setTimeout(remove, 1400);
         })();
 
         /* ============================================================
@@ -1419,24 +1665,37 @@
             const stack = document.getElementById('toastStack');
             if (!stack) return;
             const MAX = 4;
+            const TOAST_LIFETIME = 2700;
 
-            window.showToast = function (msg) {
+            window.showToast = function (message) {
+                const msg = String(message || '').trim();
                 if (!msg) return;
-                // 超过上限移除最早添加的一个（column-reverse 下视觉最下方）
                 while (stack.children.length >= MAX) {
-                    stack.firstElementChild.remove();
+                    const oldest = stack.firstElementChild;
+                    if (!oldest) break;
+                    if (oldest._toastTimer) clearTimeout(oldest._toastTimer);
+                    oldest.remove();
                 }
-                const el = document.createElement('div');
-                el.className = 'toast';
-                el.textContent = msg;
-                stack.appendChild(el);
 
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = msg;
+                toast.setAttribute('role', 'status');
+                stack.appendChild(toast);
+
+                let removed = false;
                 const cleanup = () => {
-                    if (el.parentNode) el.parentNode.removeChild(el);
+                    if (removed) return;
+                    removed = true;
+                    if (toast._toastTimer) clearTimeout(toast._toastTimer);
+                    toast.removeEventListener('animationend', onAnimationEnd);
+                    toast.remove();
                 };
-                el.addEventListener('animationend', cleanup, { once: true });
-                // 动画事件在后台标签页可能延迟，保留短兜底清理
-                setTimeout(cleanup, 3000);
+                const onAnimationEnd = (event) => {
+                    if (event.target === toast && event.animationName === 'toastCycle') cleanup();
+                };
+                toast.addEventListener('animationend', onAnimationEnd);
+                toast._toastTimer = window.setTimeout(cleanup, TOAST_LIFETIME + 250);
             };
         })();
 
@@ -1522,12 +1781,9 @@
 
             function setThumb(offset, animate) {
                 currentOffset = offset;
-                if (!animate) thumb.style.transition = 'none';
+                thumb.classList.toggle('no-transition', !animate);
                 thumb.style.transform = 'translate3d(' + offset + 'px,0,0)';
-                if (!animate) {
-                    void thumb.offsetWidth;
-                    thumb.style.transition = '';
-                }
+                if (!animate) requestAnimationFrame(() => thumb.classList.remove('no-transition'));
             }
 
             function systemPrefersDark() {
@@ -1548,15 +1804,15 @@
             function applyMode(mode, persist) {
                 currentMode = mode;
 
-                root.classList.add('theme-anim-off');
+                const animateChange = !!persist;
+                if (!animateChange) root.classList.add('theme-anim-off');
                 root.setAttribute('data-theme', resolveTheme(mode));
                 track.dataset.active = mode;
-                setThumb(modes.indexOf(mode) * cachedSegW, true);
+                setThumb(modes.indexOf(mode) * cachedSegW, animateChange);
                 options.forEach(el => {
                     el.setAttribute('aria-checked', el.dataset.mode === mode ? 'true' : 'false');
                 });
-                void root.offsetWidth;
-                root.classList.remove('theme-anim-off');
+                if (!animateChange) requestAnimationFrame(() => root.classList.remove('theme-anim-off'));
 
                 if (persist) {
                     try { localStorage.setItem(STORAGE_KEY, mode); } catch (e) {}
@@ -1677,51 +1933,56 @@
         /* ============================================================
            6. 缩放模糊遮罩（全宽度触发，加强虚化）
            ============================================================ */
-        (function initResizeMask() {
+        (function initMotionBlur() {
             const mask = document.getElementById('maskOverlay');
             if (!mask) return;
-
-            let resizeTimer = 0;
+            const body = document.body;
             let releaseTimer = 0;
-            let lastW = window.innerWidth;
+            let resizeTimer = 0;
             let lastY = window.scrollY;
-            let lastT = performance.now();
+            let lastTime = performance.now();
+            let active = false;
 
-            // 每次滚动都立即启用虚化；停止滚动后只延迟 55ms 解除。
-            const activate = (duration = 55) => {
-                mask.classList.add('active');
-                document.body.classList.add('is-resizing');
+            const setActive = (on) => {
+                if (active === on) return;
+                active = on;
+                mask.classList.toggle('active', on);
+                body.classList.toggle('is-resizing', on);
+            };
+            const pulse = (hold = 55) => {
+                setActive(true);
                 clearTimeout(releaseTimer);
-                releaseTimer = setTimeout(() => {
-                    mask.classList.remove('active');
-                    document.body.classList.remove('is-resizing');
-                }, duration);
+                releaseTimer = window.setTimeout(() => setActive(false), hold);
             };
 
-            window.addEventListener('resize', () => {
-                if (window.innerWidth === lastW) return;
-                lastW = window.innerWidth;
-                activate(65);
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(() => {
-                    mask.classList.remove('active');
-                    document.body.classList.remove('is-resizing');
-                }, 80);
-            }, { passive: true });
-
-            window.addEventListener('scroll', () => {
+            let scrollRaf = 0;
+            const updateScrollMotion = () => {
+                scrollRaf = 0;
                 const now = performance.now();
                 const y = window.scrollY;
-                const dt = Math.max(1, now - lastT);
+                const dt = Math.max(8, now - lastTime);
                 const speed = Math.abs(y - lastY) / dt;
                 lastY = y;
-                lastT = now;
-
-                // 滑动时同步虚化，速度越快模糊越强；滚动停止后快速释放。
-                const blur = Math.min(11, 6 + speed * 3.5);
-                mask.style.setProperty('--scroll-blur', `${blur.toFixed(1)}px`);
-                activate(55);
+                lastTime = now;
+                // 每帧最多处理一次；不在滚动过程中动态修改滤镜半径。
+                pulse(speed > 1.5 ? 90 : 62);
+            };
+            window.addEventListener('scroll', () => {
+                if (!scrollRaf) scrollRaf = requestAnimationFrame(updateScrollMotion);
             }, { passive: true });
+
+            window.addEventListener('resize', () => {
+                pulse(80);
+                clearTimeout(resizeTimer);
+                resizeTimer = window.setTimeout(() => setActive(false), 110);
+            }, { passive: true });
+            window.addEventListener('pagehide', () => {
+                clearTimeout(releaseTimer);
+                clearTimeout(resizeTimer);
+                if (scrollRaf) cancelAnimationFrame(scrollRaf);
+                scrollRaf = 0;
+                setActive(false);
+            }, { once: true });
         })();
 
         /* ============================================================
@@ -1784,6 +2045,7 @@
             }
 
             function openModal(sourceEl, index) {
+                if (!sourceEl || modalOverlay.classList.contains('active')) return;
                 const snapshotHTML = sourceEl.innerHTML;
 
                 const rect = sourceEl.getBoundingClientRect();
@@ -1823,13 +2085,18 @@
                 copyBtn.textContent = '复制内容';
 
                 copyBtn.addEventListener('click', () => {
-                    copyBtn.classList.remove('pop');
-                    void copyBtn.offsetWidth;
-                    copyBtn.classList.add('pop');
+                    if (!reduceMotion && typeof copyBtn.animate === 'function') {
+                        copyBtn.animate(
+                            [
+                                { transform: 'scale(1)' },
+                                { transform: 'scale(.96)', offset: .35 },
+                                { transform: 'scale(1.025)', offset: .68 },
+                                { transform: 'scale(1)' }
+                            ],
+                            { duration: 260, easing: 'cubic-bezier(.22,.68,0,1)' }
+                        );
+                    }
                     copyText(sourceEl.innerText, copyBtn);
-                });
-                copyBtn.addEventListener('animationend', (ev) => {
-                    if (ev.animationName === 'copyPop') copyBtn.classList.remove('pop');
                 });
 
                 actions.appendChild(idx);
@@ -1841,29 +2108,21 @@
                 modalContent.scrollLeft = 0;
 
                 lastFocus = document.activeElement;
+                modalOverlay.removeAttribute('aria-hidden');
                 setBackgroundInert(true);
                 document.body.classList.add('modal-open');
                 modalOverlay.classList.add('active');
                 requestAnimationFrame(() => {
-                    if (modalContent.scrollHeight <= modalContent.clientHeight + 1) {
-                        modalContent.classList.add('no-scroll');
-                    }
-                });
-                function focusCloseBtn(attempt) {
                     if (!modalOverlay.classList.contains('active')) return;
-                    if (!modalOverlay.contains(document.activeElement)) {
-                        closeBtn.focus({ preventScroll: true });
-                    }
-                    if (attempt < 2) {
-                        setTimeout(() => focusCloseBtn(attempt + 1), 100);
-                    }
-                }
-                setTimeout(() => focusCloseBtn(0), 60);
+                    modalContent.classList.toggle('no-scroll', modalContent.scrollHeight <= modalContent.clientHeight + 1);
+                    closeBtn.focus({ preventScroll: true });
+                });
             }
 
             function closeModal() {
                 if (!modalOverlay.classList.contains('active')) return;
                 modalOverlay.classList.remove('active');
+                modalOverlay.setAttribute('aria-hidden', 'true');
                 document.body.classList.remove('modal-open');
                 setBackgroundInert(false);
                 if (lastFocus && typeof lastFocus.focus === 'function') {
@@ -1872,18 +2131,21 @@
                 lastFocus = null;
             }
 
-            items.forEach((item, i) => {
-                item.addEventListener('click', function (e) {
-                    this._lastClickX = e.clientX;
-                    this._lastClickY = e.clientY;
-                    openModal(this, i + 1);
-                });
-                item.addEventListener('keydown', function (e) {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        openModal(this, i + 1);
-                    }
-                });
+            const itemOrder = new Map(items.map((item, index) => [item, index + 1]));
+            const interactionRoot = boardWrapper || document;
+            interactionRoot.addEventListener('click', (e) => {
+                const item = e.target.closest ? e.target.closest('.record-item') : null;
+                if (!item || !itemOrder.has(item) || e.button !== 0) return;
+                item._lastClickX = e.clientX;
+                item._lastClickY = e.clientY;
+                openModal(item, itemOrder.get(item));
+            });
+            interactionRoot.addEventListener('keydown', (e) => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                const item = e.target.closest ? e.target.closest('.record-item') : null;
+                if (!item || !itemOrder.has(item)) return;
+                e.preventDefault();
+                openModal(item, itemOrder.get(item));
             });
 
             modalOverlay.addEventListener('click', (e) => {
@@ -1921,10 +2183,10 @@
                         await navigator.clipboard.writeText(payload);
                         ok = true;
                     } else {
-                        ok = fallbackCopySync(text);
+                        ok = fallbackCopySync(payload);
                     }
                 } catch (e) {
-                    ok = fallbackCopySync(text);
+                    ok = fallbackCopySync(payload);
                 }
 
                 btn.textContent = ok ? '已复制 ✓' : '复制失败';
@@ -1932,9 +2194,11 @@
                 if (typeof window.showToast === 'function') {
                     window.showToast(ok ? '已复制到剪贴板' : '复制失败，请手动选择');
                 }
-                setTimeout(() => {
+                if (btn._copyResetTimer) clearTimeout(btn._copyResetTimer);
+                btn._copyResetTimer = window.setTimeout(() => {
                     btn.textContent = '复制内容';
                     btn.classList.remove('copied');
+                    btn._copyResetTimer = 0;
                 }, 1400);
             }
 
