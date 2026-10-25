@@ -88,11 +88,63 @@
     }, 2000);
   }
 
-  Array.prototype.forEach.call(document.querySelectorAll('.project'), function (card) {
+  Array.prototype.forEach.call(document.querySelectorAll('button.project'), function (card) {
     card.addEventListener('click', function () {
       showToast('还没做完');
     });
   });
+
+  /* ---------------- 版本页：按游戏版本过滤 ---------------- */
+  var versionFilter = document.getElementById('version-filter');
+  if (versionFilter) {
+    var filterBtn = document.getElementById('version-filter-btn');
+    var filterMenu = document.getElementById('version-filter-menu');
+    var filterValue = document.getElementById('version-filter-value');
+    var filterOptions = versionFilter.querySelectorAll('.version-filter-option');
+    var versionRows = document.querySelectorAll('.versions-row[data-game]');
+
+    function applyFilter(value) {
+      Array.prototype.forEach.call(versionRows, function (row) {
+        row.hidden = value !== 'all' && row.getAttribute('data-game') !== value;
+      });
+    }
+
+    function setFilterOpen(open) {
+      versionFilter.classList.toggle('is-open', open);
+      filterBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      filterMenu.hidden = !open;
+    }
+
+    filterBtn.addEventListener('click', function () {
+      setFilterOpen(filterMenu.hidden);
+    });
+
+    Array.prototype.forEach.call(filterOptions, function (option) {
+      option.addEventListener('click', function () {
+        var value = option.getAttribute('data-value');
+        Array.prototype.forEach.call(filterOptions, function (item) {
+          var selected = item === option;
+          item.classList.toggle('is-selected', selected);
+          item.setAttribute('aria-selected', selected ? 'true' : 'false');
+        });
+        filterValue.textContent = option.querySelector('span').textContent;
+        applyFilter(value);
+        setFilterOpen(false);
+        filterBtn.focus();
+      });
+    });
+
+    document.addEventListener('click', function (event) {
+      if (!versionFilter.contains(event.target)) setFilterOpen(false);
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && !filterMenu.hidden) {
+        setFilterOpen(false);
+        filterBtn.focus();
+      }
+    });
+  }
 
   /* ---------------- 滚动显现 ---------------- */
   var revealTargets = document.querySelectorAll('.reveal');
