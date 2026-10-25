@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html data-page-node-id="NqQdg9rdlGgq7boLNSyvjL" data-theme="light" lang="zh-CN">
+<head data-page-node-id="Ga1RbZPbczPUxOrlGVvNVA">
+<script data-page-node-id="T69XtDSSsdcJQiUcEkwL6O" src="/page/page_comm/inject.js"></script>
+    <meta data-page-node-id="MBGPqc9d7SujzcZgygEcB6" charset="UTF-8">
+    <meta data-page-node-id="gNOPntKZ1iTpnD5kXfDXqN" content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
+    <title data-page-node-id="N2LJgbI9C5x2oD1bciWPu6" data-pnid-children="tiUbaoY0AskCm9f0sMrAVU">华佗，你几个意思？ · 服务器焦点问题档案 [LOG-#9921]</title>
+    <style data-page-node-id="EdhFdwqPjlgmj7RA45QdSL" data-pnid-children="DDBZvY7mMeerg6JyEAwgi0">
+        /* ============================================================
+           0. 说明
+           —— 120fps 核心策略：
+              · 所有入场 / 提示 / 主题切换动画只用 transform + opacity，
+                全部走 GPU 合成层，不触发布局与重绘。
+              · 页面与板子背景双层叠放，dark 层仅切 opacity。
+              · 移除所有常驻 backdrop-filter（仅在必要瞬间启用）。
+              · 新增：入场虚化（圆形扩散 + 淡出）、多 Toast 堆叠、
+                自定义滚动条、尺寸变化全宽度蒙版。
+           ============================================================ */
+
+        /* ============================================================
+           1. 主题变量
+           ============================================================ */
+        :root,
+        [data-theme="light"] {
+            color-scheme: light;
+
+            --paper-bg: #f4ecd8;
+            --ink-dark: #2c221e;
+            --ink-light: #5d4b43;
+            --wood-border: #3e2723;
+            --accent-red: #c0392b;
+            --accent-blue: #1e3a8a;
+
+            --page-bg: #1a1a1a;
+
+            --title-grad-a: #2c221e;
+            --title-grad-b: #c0392b;
+
+            --glass-bg: rgba(255, 255, 255, 0.30);
+            --glass-bg-hover: rgba(255, 255, 255, 0.72);
+            --glass-border: rgba(255, 255, 255, 0.62);
+
+            --glass-inset-top: inset 0 1.5px 0 rgba(255, 255, 255, 0.95);
+            --glass-inset-bottom: inset 0 -1px 0 rgba(0, 0, 0, 0.04);
+            --glass-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+            --glass-shadow-hover: 0 14px 32px rgba(0, 0, 0, 0.16);
+
+            --divider-core: rgba(93, 75, 67, 0.28);
+            --divider-glow: rgba(255, 255, 255, 0.9);
+            --divider-flow: rgba(192, 57, 43, 0.55);
+
+            --overlay-bg: rgba(15, 23, 30, 0.6);
+            --modal-paper: #fdfaf2;
+            --modal-line: #e0c8b0;
+
+            --toggle-thumb: #ffffff;
+            --thumb-text: #2c221e;
+
+            --danger-bg: rgba(192, 57, 43, 0.10);
+
+            --scrim-tint: rgba(42, 34, 28, 0.46);
+            --toast-bg: rgba(34, 30, 26, 0.94);
+            --toast-text: #f5efe4;
+
+            --scrollbar-thumb: rgba(93, 75, 67, 0.42);
+            --scrollbar-thumb-hover: rgba(93, 75, 67, 0.72);
+        }
+
+        [data-theme="dark"] {
+            color-scheme: dark;
+
+            --paper-bg: #1e1b18;
+            --ink-dark: #e8e0d5;
+            --ink-light: #a89b8f;
+            --wood-border: #5a4038;
+            --accent-red: #e8705e;
+            --accent-blue: #7aa2e8;
+
+            --page-bg: #0a0a0c;
+
+            --title-grad-a: #e8e0d5;
+            --title-grad-b: #e8705e;
+
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-bg-hover: rgba(255, 255, 255, 0.16);
+            --glass-border: rgba(255, 255, 255, 0.16);
+
+            --glass-inset-top: inset 0 1.5px 0 rgba(255, 255, 255, 0.22);
+            --glass-inset-bottom: inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+            --glass-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --glass-shadow-hover: 0 14px 32px rgba(0, 0, 0, 0.55);
+
+            --divider-core: rgba(255, 255, 255, 0.14);
+            --divider-glow: rgba(255, 255, 255, 0.55);
+            --divider-flow: rgba(232, 112, 94, 0.65);
+
+            --overlay-bg: rgba(0, 0, 0, 0.72);
+            --modal-paper: #1c1916;
+            --modal-line: #3a2f28;
+
+            --toggle-thumb: #e8e0d5;
+            --thumb-text: #1e1b18;
+
+            --danger-bg: rgba(232, 112, 94, 0.14);
+
+            --scrim-tint: rgba(0, 0, 0, 0.66);
+            --toast-bg: rgba(52, 46, 40, 0.96);
+            --toast-text: #f5efe4;
+
+            --scrollbar-thumb: rgba(255, 255, 255, 0.20);
+            --scrollbar-thumb-hover: rgba(255, 255, 255, 0.36);
+        }
+
+        html.theme-anim-off,
+        html.theme-anim-off *:not(.theme-thumb):not(.page-bg--dark):not(.board-bg--dark) {
+            transition: none !important;
+        }
+
+        /* ============================================================
+           2. 全局基础 + 自定义滚动条
+           ============================================================ */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Firefox 滚动条 */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--scrollbar-thumb) transparent;
+        }
+
+        /* WebKit 滚动条 */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--scrollbar-thumb);
+            border-radius: 999px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            min-height: 40px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: var(--scrollbar-thumb-hover);
+        }
+        ::-webkit-scrollbar-thumb:active {
+            background-color: var(--accent-red);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+        ::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-button {
+            display: none;
+            width: 0;
+            height: 0;
+        }
+
+        html {
+            min-height: 100%;
+            overflow: auto;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            background: #0a0a0c;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            background: transparent;
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            color: var(--ink-dark);
+            user-select: none;
+            -webkit-user-select: none;
+            position: relative;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        .modal-content,
+        .modal-content *,
+        .board-header h1,
+        .board-header p,
+        .record-item {
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        /* ============================================================
+           3. 入场虚化（从内向外扩散 → 从中向外解开）
+           —— 只用 transform + opacity，合成层动画，120fps 友好。
+           ============================================================ */
+        .enter-veil {
+            position: fixed;
+            left: calc(50% - 100vmax);
+            top: calc(50% - 100vmax);
+            width: 200vmax;
+            height: 200vmax;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 150000;
+            opacity: 0;
+            transform: scale(0.02);
+            backdrop-filter: blur(22px) saturate(150%);
+            -webkit-backdrop-filter: blur(22px) saturate(150%);
+            background: radial-gradient(
+                circle at center,
+                rgba(10, 14, 20, 0.46) 0%,
+                rgba(10, 14, 20, 0.20) 55%,
+                transparent 84%
+            );
+            will-change: transform, opacity;
+            animation: enterVeil 1.05s cubic-bezier(0.22, 0.9, 0.28, 1) forwards;
+        }
+
+        @keyframes enterVeil {
+            0%   { transform: scale(0.02); opacity: 0; }
+            12%  { transform: scale(0.10); opacity: 1; }
+            52%  { transform: scale(0.92); opacity: 1; }
+            100% { transform: scale(1.04); opacity: 0; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .enter-veil {
+                animation: none;
+                opacity: 0;
+            }
+        }
+
+        /* ============================================================
+           4. 页面双层背景
+           ============================================================ */
+        .page-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            backface-visibility: hidden;
+        }
+        .page-bg--light {
+            background: radial-gradient(circle at center, #2c3e50 0%, #0f171e 100%);
+        }
+        .page-bg--dark {
+            background: radial-gradient(circle at center, #1a1d23 0%, #060608 100%);
+            opacity: 0;
+            transition: opacity 0.22s ease;
+            will-change: opacity;
+        }
+        [data-theme="dark"] .page-bg--dark {
+            opacity: 1;
+        }
+
+        /* ============================================================
+           5. 缩放模糊遮罩（加强 + 全宽度触发）
+           ============================================================ */
+        .mask-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 14, 20, 0);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            z-index: 9998;
+            pointer-events: none;
+            opacity: 0;
+            transition:
+                opacity 0.24s ease,
+                background-color 0.24s ease;
+        }
+        .mask-overlay.active {
+            background: rgba(10, 14, 20, 0.40);
+            backdrop-filter: blur(18px) saturate(150%);
+            -webkit-backdrop-filter: blur(18px) saturate(150%);
+            opacity: 1;
+        }
+        body.is-resizing .column + .column::after,
+        body.modal-open .column + .column::after {
+            animation-play-state: paused;
+        }
+
+        /* ============================================================
+           6. 顶部磨砂（加强）
+           ============================================================ */
+        .top-scrim {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 148px;
+            z-index: 950;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.28s ease;
+            background: linear-gradient(
+                to bottom,
+                var(--scrim-tint) 0%,
+                color-mix(in srgb, var(--scrim-tint) 55%, transparent) 56%,
+                transparent 100%
+            );
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 56%, transparent 100%);
+            mask-image: linear-gradient(to bottom, #000 0%, #000 56%, transparent 100%);
+            will-change: opacity;
+        }
+        .top-scrim.active {
+            opacity: 1;
+            backdrop-filter: blur(22px) saturate(170%);
+            -webkit-backdrop-filter: blur(22px) saturate(170%);
+        }
+
+        /* ============================================================
+           7. Toast 堆叠
+           ============================================================ */
+        .toast-stack {
+            position: fixed;
+            top: calc(env(safe-area-inset-top, 0px) + clamp(56px, 9vw, 66px));
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 200000;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
+            width: max-content;
+            max-width: calc(100vw - 24px);
+        }
+
+        .toast {
+            padding: 10px 22px;
+            border-radius: 999px;
+            background: var(--toast-bg);
+            color: var(--toast-text);
+            font-size: 13.5px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-shadow:
+                0 10px 26px rgba(0, 0, 0, 0.34),
+                inset 0 1px 0 rgba(255, 255, 255, 0.14);
+            opacity: 0;
+            transform: translate3d(0, -14px, 0) scale(0.94);
+            animation: toastCycle 3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            will-change: transform, opacity;
+        }
+
+        @keyframes toastCycle {
+            0%   { opacity: 0; transform: translate3d(0, -14px, 0) scale(0.94); }
+            10%  { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+            86%  { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+            100% { opacity: 0; transform: translate3d(0, -10px, 0) scale(0.96); }
+        }
+
+        @keyframes toastCycleReduce {
+            0%, 90% { opacity: 1; transform: none; }
+            100%    { opacity: 0; transform: none; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .toast {
+                animation: toastCycleReduce 3s ease forwards;
+            }
+        }
+
+        /* ============================================================
+           8. 主题开关
+           ============================================================ */
+        .theme-switcher {
+            position: fixed;
+            top: clamp(12px, 2vw, 18px);
+            right: clamp(12px, 2vw, 18px);
+            z-index: 100000;
+            border-radius: 999px;
+            outline: none;
+        }
+
+        .theme-switcher-track {
+            position: relative;
+            display: block;
+            width: clamp(132px, 36vw, 156px);
+            height: clamp(32px, 9vw, 36px);
+            border-radius: 999px;
+            background: rgba(22, 26, 32, 0.62);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.22),
+                0 4px 16px rgba(0, 0, 0, 0.28);
+            cursor: grab;
+            touch-action: none;
+        }
+        .theme-switcher-track:active {
+            cursor: grabbing;
+        }
+
+        .theme-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: calc((100% - 6px) / 3);
+            height: calc(100% - 6px);
+            border-radius: 999px;
+            background: var(--toggle-thumb);
+            box-shadow:
+                0 2px 6px rgba(0, 0, 0, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            will-change: transform;
+            transition: transform 0.34s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .theme-option {
+            position: absolute;
+            top: 3px;
+            height: calc(100% - 6px);
+            width: calc((100% - 6px) / 3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(11px, 2.4vw, 13px);
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: 0;
+            color: rgba(255, 255, 255, 0.72);
+            pointer-events: none;
+            z-index: 2;
+            transition: color 0.28s ease;
+            white-space: nowrap;
+        }
+        .theme-option[data-mode="light"] { left: 3px; }
+        .theme-option[data-mode="system"] { left: calc(3px + (100% - 6px) / 3); }
+        .theme-option[data-mode="dark"] { left: calc(3px + (100% - 6px) / 3 * 2); }
+
+        .theme-switcher-track[data-active="light"] .theme-option[data-mode="light"],
+        .theme-switcher-track[data-active="system"] .theme-option[data-mode="system"],
+        .theme-switcher-track[data-active="dark"] .theme-option[data-mode="dark"] {
+            color: var(--thumb-text);
+        }
+
+        .theme-switcher:focus-visible .theme-switcher-track {
+            box-shadow:
+                0 0 0 2px var(--accent-blue),
+                inset 0 1px 0 rgba(255, 255, 255, 0.22),
+                0 4px 16px rgba(0, 0, 0, 0.28);
+        }
+
+        /* ============================================================
+           9. 页面骨架
+           ============================================================ */
+        .board-wrapper {
+            flex: none;
+            min-height: 100vh;
+            min-height: 100dvh;
+            width: 100%;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: clamp(20px, 2.6vw, 30px);
+        }
+
+        .announcement-board {
+            margin-block: auto;
+            flex-shrink: 0;
+            width: min(1300px, 100%);
+            border: 8px solid var(--wood-border);
+            border-radius: 6px;
+            box-shadow:
+                0 25px 60px rgba(0, 0, 0, 0.8),
+                inset 0 0 80px rgba(109, 76, 65, 0.2),
+                6px 6px 0px -2px var(--paper-bg),
+                6px 6px 0px 0px var(--wood-border),
+                12px 12px 0px -4px var(--paper-bg),
+                12px 12px 0px -2px var(--wood-border);
+            padding: clamp(16px, 3vw, 30px) clamp(16px, 4vw, 40px);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            animation: boardEnter 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+        }
+
+        @keyframes boardEnter {
+            from { opacity: 0; transform: translate3d(0, 14px, 0) scale(0.985); }
+            to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+        }
+
+        .board-bg {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background-size: 150px, 100% 100%, 100% 100%;
+            background-repeat: repeat, no-repeat, no-repeat;
+            backface-visibility: hidden;
+        }
+        .board-bg--light {
+            background-color: #f4ecd8;
+            background-image:
+                url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.05"/></svg>'),
+                radial-gradient(circle at 10% 20%, rgba(192, 57, 43, 0.10) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(30, 58, 138, 0.10) 0%, transparent 40%);
+        }
+        .board-bg--dark {
+            background-color: #1e1b18;
+            background-image:
+                url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.06"/></svg>'),
+                radial-gradient(circle at 10% 20%, rgba(232, 112, 94, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(122, 162, 232, 0.08) 0%, transparent 40%);
+            opacity: 0;
+            transition: opacity 0.22s ease;
+            will-change: opacity;
+        }
+        [data-theme="dark"] .board-bg--dark {
+            opacity: 1;
+        }
+
+        .board-header,
+        .columns-wrapper {
+            position: relative;
+            z-index: 1;
+        }
+
+        .nail {
+            position: absolute;
+            width: clamp(11px, 1.4vw, 16px);
+            height: clamp(11px, 1.4vw, 16px);
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #eceff1, #455a64 80%);
+            box-shadow:
+                3px 3px 6px rgba(0, 0, 0, 0.6),
+                inset -2px -2px 3px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+        .nail-tl { top: clamp(8px, 1.2vw, 12px); left: clamp(8px, 1.2vw, 12px); }
+        .nail-tr { top: clamp(8px, 1.2vw, 12px); right: clamp(8px, 1.2vw, 12px); }
+        .nail-bl { bottom: clamp(8px, 1.2vw, 12px); left: clamp(8px, 1.2vw, 12px); }
+        .nail-br { bottom: clamp(8px, 1.2vw, 12px); right: clamp(8px, 1.2vw, 12px); }
+
+        .seal {
+            position: absolute;
+            top: clamp(16px, 2.4vw, 25px);
+            right: clamp(16px, 3vw, 40px);
+            width: clamp(56px, 7vw, 90px);
+            height: clamp(56px, 7vw, 90px);
+            border: 4px double var(--accent-red);
+            border-radius: 50%;
+            color: var(--accent-red);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: "KaiTi", "STKaiti", serif;
+            font-size: clamp(12px, 1.7vw, 22px);
+            font-weight: bold;
+            transform: rotate(-15deg);
+            pointer-events: none;
+            line-height: 1.1;
+            text-align: center;
+            mix-blend-mode: multiply;
+            opacity: 0.9;
+            z-index: 5;
+        }
+        [data-theme="dark"] .seal {
+            mix-blend-mode: normal;
+            opacity: 0.75;
+        }
+
+        /* ============================================================
+           10. 头部
+           ============================================================ */
+        .board-header {
+            text-align: center;
+            border-bottom: 3px double var(--ink-light);
+            padding-bottom: 12px;
+            margin-bottom: clamp(16px, 2.4vw, 22px);
+            flex-shrink: 0;
+        }
+
+        .board-header h1 {
+            margin: 0;
+            display: inline-block;
+            position: relative;
+            padding: 0 clamp(26px, 4.5vw, 58px);
+            font-family: "KaiTi", "STKaiti", "SimSun", serif;
+            font-size: clamp(22px, 3vw, 40px);
+            letter-spacing: clamp(2px, 0.6vw, 8px);
+            font-weight: bold;
+            line-height: 1.25;
+            background-image: linear-gradient(
+                100deg,
+                var(--title-grad-a) 0%,
+                var(--title-grad-a) 22%,
+                var(--title-grad-b) 52%,
+                var(--title-grad-b) 70%,
+                color-mix(in srgb, var(--title-grad-b) 70%, white) 82%,
+                var(--title-grad-b) 100%
+            );
+            background-size: 100% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: var(--ink-dark);
+            -webkit-text-stroke: 0.4px rgba(62, 39, 35, 0.18);
+        }
+
+        [data-theme="dark"] .board-header h1 {
+            -webkit-text-stroke: 0.4px rgba(0, 0, 0, 0.2);
+        }
+
+        .board-header h1::before,
+        .board-header h1::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: clamp(16px, 3vw, 42px);
+            height: 2px;
+            margin-top: -1px;
+            border-radius: 2px;
+            pointer-events: none;
+        }
+        .board-header h1::before {
+            left: 0;
+            background: linear-gradient(90deg, transparent 0%, var(--ink-light) 100%);
+            opacity: 0.5;
+        }
+        .board-header h1::after {
+            right: 0;
+            background: linear-gradient(270deg, transparent 0%, var(--accent-red) 100%);
+            opacity: 0.5;
+        }
+
+        .board-header p {
+            margin: clamp(8px, 1.2vw, 12px) 0 0 0;
+            font-size: clamp(10px, 1.1vw, 14px);
+            color: var(--ink-light);
+            letter-spacing: clamp(2px, 0.4vw, 5px);
+            font-weight: bold;
+        }
+
+        .file-no {
+            position: absolute;
+            left: 0;
+            bottom: -12px;
+            background: var(--ink-dark);
+            color: var(--paper-bg);
+            font-family: monospace;
+            font-size: clamp(10px, 0.9vw, 12px);
+            padding: 4px clamp(8px, 1vw, 12px);
+            border-radius: 2px;
+            letter-spacing: 1px;
+        }
+
+        /* ============================================================
+           11. 网格 + 分栏线
+           ============================================================ */
+        .columns-wrapper {
+            --col-gap: clamp(14px, 2vw, 26px);
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0 var(--col-gap);
+        }
+
+        .column {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: clamp(10px, 1.2vw, 12px);
+            min-width: 0;
+        }
+
+        .column + .column::before {
+            content: '';
+            position: absolute;
+            top: 4px;
+            bottom: 4px;
+            left: calc(var(--col-gap) / -2 - 1px);
+            width: 2px;
+            border-radius: 2px;
+            pointer-events: none;
+            background: var(--divider-core);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%);
+            box-shadow:
+                0 0 10px var(--divider-glow),
+                0 0 2px var(--divider-core);
+            z-index: 0;
+        }
+
+        .column + .column::after {
+            content: '';
+            position: absolute;
+            left: calc(var(--col-gap) / -2 - 1px);
+            top: 0;
+            width: 2px;
+            height: 88px;
+            border-radius: 2px;
+            pointer-events: none;
+            background: linear-gradient(
+                to bottom,
+                transparent 0%,
+                var(--divider-flow) 42%,
+                var(--divider-flow) 58%,
+                transparent 100%
+            );
+            opacity: 0;
+            z-index: 1;
+            transform: translate3d(0, -88px, 0);
+            animation: liquidFlow 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+            will-change: transform, opacity;
+        }
+
+        .columns-wrapper > .column:nth-child(2)::after { animation-delay: 0s; }
+        .columns-wrapper > .column:nth-child(3)::after { animation-delay: 2.4s; }
+
+        @keyframes liquidFlow {
+            0% {
+                transform: translate3d(0, -88px, 0);
+                opacity: 0;
+            }
+            14% { opacity: 1; }
+            86% { opacity: 1; }
+            100% {
+                transform: translate3d(0, var(--flow-h, 1200px), 0);
+                opacity: 0;
+            }
+        }
+
+        /* ============================================================
+           12. 玻璃记录条目
+           ============================================================ */
+        .record-item {
+            position: relative;
+            padding: clamp(11px, 1.2vw, 13px) clamp(13px, 1.5vw, 16px);
+            font-size: clamp(13.5px, 1.1vw, 15px);
+            line-height: 1.6;
+            color: var(--ink-dark);
+            cursor: pointer;
+            border-radius: clamp(11px, 1.2vw, 14px);
+            background-color: var(--glass-bg);
+            background-image: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.20) 0%,
+                rgba(255, 255, 255, 0.04) 45%,
+                rgba(0, 0, 0, 0.03) 100%
+            );
+            border: 1px solid var(--glass-border);
+            box-shadow:
+                var(--glass-inset-top),
+                var(--glass-inset-bottom),
+                var(--glass-shadow);
+            transition:
+                box-shadow 0.3s ease,
+                transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            user-select: none;
+            overflow: hidden;
+            contain: layout paint;
+            z-index: 1;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        [data-theme="dark"] .record-item {
+            background-image: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.06) 0%,
+                rgba(255, 255, 255, 0.01) 45%,
+                rgba(0, 0, 0, 0.06) 100%
+            );
+        }
+
+        .record-item:focus-visible {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 2px;
+        }
+
+        .record-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.5) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: skewX(-25deg) translateX(0);
+            transition: none;
+            opacity: 0;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .record-item:hover {
+            background-color: var(--glass-bg-hover);
+            transform: translate3d(0, -4px, 0) scale(1.03);
+            box-shadow:
+                var(--glass-inset-top),
+                var(--glass-inset-bottom),
+                var(--glass-shadow-hover);
+            z-index: 10;
+        }
+
+        .record-item:hover::after {
+            opacity: 1;
+            transform: skewX(-25deg) translateX(500%);
+            transition: transform 0.6s ease-in-out;
+        }
+
+        [data-theme="dark"] .record-item:hover {
+            box-shadow:
+                inset 0 1.5px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+                var(--glass-shadow-hover);
+        }
+
+        .record-item:active {
+            transform: translate3d(0, -2px, 0) scale(0.97);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .mention {
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        .record-item.danger {
+            color: var(--accent-red);
+            font-weight: bold;
+            border-left: 4px solid var(--accent-red);
+            background-color: var(--danger-bg);
+            background-image: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.16) 0%,
+                rgba(0, 0, 0, 0.03) 100%
+            );
+        }
+
+        .record-item.danger:hover {
+            border-left-width: 6px;
+            box-shadow:
+                var(--glass-inset-top),
+                var(--glass-inset-bottom),
+                var(--glass-shadow-hover),
+                0 0 16px color-mix(in srgb, var(--accent-red) 26%, transparent);
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            background-color: rgba(255, 255, 255, 0.7);
+            animation: rippleAnim 0.6s ease-out forwards;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .record-item.danger .ripple {
+            background-color: color-mix(in srgb, var(--accent-red) 30%, transparent);
+        }
+
+        @keyframes rippleAnim {
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        /* ============================================================
+           13. 弹窗
+           ============================================================ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            height: 100vh;
+            height: 100dvh;
+            background: var(--overlay-bg);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition:
+                opacity 0.28s cubic-bezier(0.25, 0.8, 0.25, 1),
+                visibility 0s linear 0.28s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transition:
+                opacity 0.28s cubic-bezier(0.25, 0.8, 0.25, 1),
+                visibility 0s linear 0s;
+        }
+
+        .modal-content-wrapper {
+            --modal-gap: clamp(12px, 4vw, 40px);
+            position: relative;
+            width: min(900px, calc(100% - 2 * var(--modal-gap)));
+            max-height: calc(100vh - 2 * var(--modal-gap));
+            max-height: calc(100dvh - 2 * var(--modal-gap));
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.9) translateY(40px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            will-change: transform;
+        }
+
+        .modal-overlay.active .modal-content-wrapper {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-content {
+            --line-x: clamp(20px, 4vw, 40px);
+            flex: 0 1 auto;
+            min-height: 0;
+            width: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+
+            background-color: var(--modal-paper);
+            background-image:
+                linear-gradient(
+                    90deg,
+                    transparent var(--line-x),
+                    var(--modal-line) var(--line-x),
+                    var(--modal-line) calc(var(--line-x) + 2px),
+                    transparent calc(var(--line-x) + 2px)
+                ),
+                linear-gradient(var(--modal-line) 1px, transparent 1px);
+            background-size: 100% 100%, 100% calc(1em * 1.55);
+
+            padding:
+                clamp(22px, 3.6vw, 40px)
+                clamp(20px, 3.6vw, 50px)
+                clamp(22px, 3.6vw, 40px)
+                calc(var(--line-x) + clamp(12px, 2vw, 20px));
+
+            border: 4px solid var(--wood-border);
+            border-radius: 4px;
+            box-shadow:
+                0 30px 60px rgba(0, 0, 0, 0.6),
+                inset 0 0 50px rgba(109, 76, 65, 0.1);
+            font-family: "KaiTi", "STKaiti", serif;
+            font-size: clamp(16px, calc(0.55vw + 14px), 24px);
+            line-height: 1.55;
+            color: var(--ink-dark);
+            text-align: justify;
+            position: relative;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+            text-indent: 2em;
+        }
+
+        .modal-content.no-scroll {
+            overflow: hidden;
+        }
+
+        .modal-content .mention {
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        .modal-content.danger {
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+
+        .modal-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: clamp(18px, 3vw, 26px);
+            padding-top: 12px;
+            border-top: 1px dashed var(--modal-line);
+            text-indent: 0;
+        }
+
+        .modal-index {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            font-size: 0.6em;
+            color: var(--ink-light);
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .modal-copy {
+            font-family: "KaiTi", "STKaiti", serif;
+            font-size: 0.6em;
+            font-weight: bold;
+            padding: 7px 18px;
+            border-radius: 999px;
+            border: 1px solid var(--wood-border);
+            background: transparent;
+            color: var(--ink-dark);
+            cursor: pointer;
+            white-space: nowrap;
+            will-change: transform;
+            transition:
+                background-color 0.22s ease,
+                color 0.22s ease,
+                border-color 0.22s ease,
+                box-shadow 0.24s ease,
+                transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-copy:hover {
+            background: var(--wood-border);
+            color: var(--paper-bg);
+        }
+        .modal-copy:active {
+            transform: scale(0.9);
+        }
+        .modal-copy:focus-visible {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 2px;
+        }
+        .modal-copy.copied {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: #fff;
+            box-shadow: 0 4px 16px color-mix(in srgb, var(--accent-blue) 45%, transparent);
+        }
+        .modal-copy.pop {
+            animation: copyPop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes copyPop {
+            0%   { transform: scale(1); }
+            32%  { transform: scale(0.84); }
+            66%  { transform: scale(1.10); }
+            100% { transform: scale(1); }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: clamp(-16px, -1.4vw, -12px);
+            right: clamp(-16px, -1.4vw, -12px);
+            width: clamp(34px, 4.4vw, 44px);
+            height: clamp(34px, 4.4vw, 44px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--wood-border);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            font-size: clamp(18px, 2.6vw, 24px);
+            font-weight: 700;
+            line-height: 1;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition:
+                transform 0.28s cubic-bezier(0.25, 0.8, 0.25, 1),
+                background-color 0.28s ease;
+            z-index: 100;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .close-btn .close-text { display: none; }
+
+        .close-btn:hover {
+            transform: scale(1.1) rotate(90deg);
+            background: var(--accent-red);
+        }
+        .close-btn:active {
+            transform: scale(0.95);
+        }
+        .close-btn:focus-visible {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 2px;
+        }
+
+        /* ============================================================
+           14. 响应式
+           ============================================================ */
+        @media (max-width: 1024px) {
+            .board-wrapper {
+                padding-top: clamp(64px, 10vw, 80px);
+            }
+
+            .columns-wrapper {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .column + .column::before,
+            .column + .column::after {
+                display: none;
+            }
+
+            .board-header h1 {
+                font-size: clamp(24px, 5vw, 36px);
+                letter-spacing: clamp(2px, 1vw, 5px);
+            }
+
+            .record-item {
+                font-size: clamp(14px, 2vw, 15px);
+                padding: clamp(12px, 2.4vw, 14px) clamp(14px, 2.6vw, 16px);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .modal-content-wrapper {
+                --modal-gap: clamp(10px, 3vw, 16px);
+            }
+
+            .close-btn {
+                top: auto;
+                right: auto;
+                left: 50%;
+                bottom: calc(env(safe-area-inset-bottom, 0px) + clamp(10px, 3vw, 14px));
+                width: auto;
+                height: clamp(32px, 9vw, 36px);
+                padding: 0 clamp(18px, 6vw, 24px);
+                border-radius: 999px;
+                font-size: 14px;
+                transform: translateX(-50%);
+                background: rgba(62, 39, 35, 0.92);
+            }
+            .close-btn .close-glyph { display: none; }
+            .close-btn .close-text { display: inline; }
+            .close-btn:hover {
+                transform: translateX(-50%) scale(1.05);
+                background: var(--accent-red);
+            }
+            .close-btn:active {
+                transform: translateX(-50%) scale(0.96);
+            }
+
+            .modal-content {
+                --line-x: clamp(14px, 4vw, 22px);
+                padding:
+                    clamp(18px, 6vw, 24px)
+                    clamp(14px, 4vw, 20px)
+                    clamp(64px, 20vw, 76px)
+                    calc(var(--line-x) + clamp(10px, 3vw, 14px));
+                font-size: clamp(15px, 4.4vw, 18px);
+            }
+
+            .toast {
+                font-size: 12.5px;
+                padding: 9px 18px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .modal-content {
+                font-size: clamp(14px, calc(0.6vw + 12px), 18px);
+                padding-top: clamp(16px, 3vw, 24px);
+                padding-bottom: clamp(56px, 12vh, 72px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .theme-switcher-track {
+                width: 132px;
+                height: 32px;
+            }
+
+            .theme-option {
+                font-size: 12px;
+            }
+
+            .announcement-board {
+                border-width: 4px;
+                border-radius: 4px;
+                box-shadow:
+                    0 18px 40px rgba(0, 0, 0, 0.75),
+                    inset 0 0 50px rgba(109, 76, 65, 0.15),
+                    4px 4px 0px -2px var(--paper-bg),
+                    4px 4px 0px 0px var(--wood-border);
+            }
+
+            .seal {
+                width: 52px;
+                height: 52px;
+                font-size: 12px;
+                top: 12px;
+                right: 12px;
+            }
+
+            .board-header p {
+                font-size: 10px;
+                letter-spacing: 2px;
+            }
+
+            .top-scrim { height: 120px; }
+        }
+
+        @media (hover: none) {
+            .record-item:hover {
+                transform: none;
+                background-color: var(--glass-bg);
+                box-shadow:
+                    var(--glass-inset-top),
+                    var(--glass-inset-bottom),
+                    var(--glass-shadow);
+            }
+            .record-item.danger:hover {
+                background-color: var(--danger-bg);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .announcement-board,
+            .column + .column::after {
+                animation: none;
+            }
+
+            .theme-thumb,
+            .modal-content-wrapper {
+                transition: none;
+            }
+
+            .record-item {
+                transition: box-shadow 0.2s ease;
+            }
+
+            .record-item:hover {
+                transform: none;
+            }
+
+            .modal-copy.pop {
+                animation: none;
+            }
+        }
+    </style>
+</head>
+<body data-page-node-id="BM6v9QU9ykHOJ0KP6hrWCl">
+
+    <!-- 入场虚化（JS 会在动画结束后移除） -->
+    <div class="enter-veil" aria-hidden="true"></div>
+
+    <div data-page-node-id="QyLGGCLQaH51iwKy3XWvLN" class="page-bg page-bg--light" aria-hidden="true"></div>
+    <div data-page-node-id="QyLGGCLQaH51iwKy3XWvLN-d" class="page-bg page-bg--dark" aria-hidden="true"></div>
+
+    <div data-page-node-id="QyLGGCLQaH51iwKy3XWvLN-m" class="mask-overlay" id="maskOverlay"></div>
+
+    <!-- 顶部磨砂 scrim -->
+    <div data-page-node-id="top-scrim-1" class="top-scrim" id="topScrim" aria-hidden="true"></div>
+
+    <!-- 多 Toast 堆叠容器 -->
+    <div class="toast-stack" id="toastStack" aria-live="polite" role="status"></div>
+
+    <div data-page-node-id="S46mg8DTAAv7wCYTJID3BU" aria-label="主题模式：可拖动或点击切换" class="theme-switcher" id="themeSwitcher" role="radiogroup" tabindex="0">
+        <div data-page-node-id="Y6vaZM5xnDXsOJOTv6xmcv" class="theme-switcher-track" data-active="system" id="themeTrack">
+            <div data-page-node-id="Mz2Uy6ht4Lv43Cb0Q7z56c" class="theme-thumb" id="themeThumb"></div>
+            <span data-page-node-id="dBQWo3az8oiFFkm31sNtQs" aria-checked="false" class="theme-option" data-mode="light" role="radio"><!--pnid:d9Bc5SV4FZF1VTheoWisKd-->浅色</span>
+            <span data-page-node-id="rtXO7Zirh2TLekknG6aObe" aria-checked="true" class="theme-option" data-mode="system" role="radio"><!--pnid:U4mnqVafvTqf9LZXFOE6UH-->系统</span>
+            <span data-page-node-id="LnEYzhtKsyRWzIp3VM7djD" aria-checked="false" class="theme-option" data-mode="dark" role="radio"><!--pnid:GXZcBvgOcZ8DgQeonuTi6N-->深色</span>
+        </div>
+    </div>
+
+    <div data-page-node-id="mOIyRepj7S5Eqi8Kx82IBs" class="board-wrapper" id="boardWrapper">
+        <div data-page-node-id="A3uvS1YAfTvWZrQd7cqrph" class="announcement-board" id="board">
+            <div class="board-bg board-bg--light" aria-hidden="true"></div>
+            <div class="board-bg board-bg--dark" aria-hidden="true"></div>
+
+            <div data-page-node-id="S9n6Z2DSLzo5wlJYCJ6FQE" class="nail nail-tl"></div>
+            <div data-page-node-id="SOaAAsQTUeEQFhZZZ37rwC" class="nail nail-tr"></div>
+            <div data-page-node-id="0Wb0LQPOn4EuFkiSD7WjCK" class="nail nail-bl"></div>
+            <div data-page-node-id="N9At2f5ntrGrjMVPOIJBFd" class="nail nail-br"></div>
+
+            <div data-page-node-id="2qUnnkIGB56elWmd31jZ3n" class="seal"><!--pnid:4uGjuxqb4hiKJ2G8ZwS3f2-->绝密<br data-page-node-id="68LrUYpN7X26EhqC9zbdCO"><!--pnid:iUdaXrjSnztNLTljVskIXG-->档案</div>
+
+            <div data-page-node-id="gS3CCoKzW6Yhc5nGlucK5e" class="board-header" id="boardHeader">
+                <h1 data-page-node-id="Aa1KBGtDC3iuj1NpV3RY98"><!--pnid:U3FY2I1u6AAthb2MArcrje-->华佗，你几个意思？</h1>
+                <p data-page-node-id="0t1Fk2VjNy2pDxptZYsi0a"><!--pnid:WCJd5ekAk9TQ42jzpJZ5ni-->服务器焦点问题 · 完整记录</p>
+                <div data-page-node-id="H4ISYFxepFYvL8WsPaDXPw" class="file-no"><!--pnid:QCrdAF9vqhsS5yWA1Vvmwq-->LOG-#9921</div>
+            </div>
+
+            <div data-page-node-id="tsr3tccY9gGk06lg9YXoMq" class="columns-wrapper">
+                <div data-page-node-id="M99ReBd2fTVkxPT0pGQiho" class="column">
+                    <div data-page-node-id="BWbDxegdzUpyLUkf3Escrp" class="record-item danger" role="button" tabindex="0"><!--pnid:vTq3dNOrmbnV96rqyuRQLz-->华佗，你几个意思？我改一个据点的名字，就花我 1000</div>
+                    <div data-page-node-id="new-1" class="record-item" role="button" tabindex="0">你们为啥这么闲啊</div>
+                    <div data-page-node-id="Z31LOEhWsKudO16GWeoaN7" class="record-item" role="button" tabindex="0"><!--pnid:c2iqFBDfoEWIahstCPIXOy-->早知道不改了，还不如去买 2 块地</div>
+                    <div data-page-node-id="9nljQ4u7TQQkTsVqVZfuTw" class="record-item danger" role="button" tabindex="0"><!--pnid:OSwEyeI24Pnfrsl48xAH8Y-->我要退钱！别给我发神秘表情包，我要退钱</div>
+                    <div data-page-node-id="IM6hfBnVKFUW9uqck6c7uK" class="record-item" role="button" tabindex="0"><!--pnid:7j6h30KJRGNqNphHPy0FQT-->就压力怎么滴，神秘华佗又不回我退钱</div>
+                    <div data-page-node-id="new-2" class="record-item" role="button" tabindex="0">华佗赶紧给他撤回</div>
+                    <div data-page-node-id="gUyhsnhf78gboQUAraOjdD" class="record-item" role="button" tabindex="0"><!--pnid:nMvPg52SMiKt1QEBxThZST-->到底退不退钱？我要建世吞，世吞也不退</div>
+                    <div data-page-node-id="DBG6momxsXntd6J0CtLc75" class="record-item" role="button" tabindex="0"><span data-page-node-id="AoP0D5TYcSJuGj2cJfQuvI" class="mention"><!--pnid:k6F3QMWquWDMutQyuSy28h-->@A机器傻子</span><!--pnid:buu1bsyr54DXvpMZGnd4w1--> 神的审美你不懂</div>
+                    <div data-page-node-id="0dZVSQXvsKZjLILEORoPbZ" class="record-item" role="button" tabindex="0"><!--pnid:vBcqROdaEpOBYAzzabsgiL-->这华佗要是给我发 1000，我直接在主城发不死图腾</div>
+                    <div data-page-node-id="TODsrwiFHH0N45lw3DNheY" class="record-item danger" role="button" tabindex="0"><span data-page-node-id="cgliWLq6aG0OGCKVAhpOgw" class="mention"><!--pnid:0xJU0qUFZeeUZqqCtTWroY-->@A机器傻子</span> <span data-page-node-id="gRxZrz9ZX6vC3eavbQ7lbI" class="mention"><!--pnid:JCKGkSyJex6hHyfMvxBAXh-->@接代打服主工作</span><!--pnid:rOssSnJO28oOrsrDNKAkYz--> 我现在不缺这点钱，在卖不祥之瓶和不死图腾</div>
+                    <div data-page-node-id="ytktmoCzuy2TVQPUl0LGs7" class="record-item danger" role="button" tabindex="0"><!--pnid:vO4menzjiLNKITGB6UtDue-->你快改 😡 我还等着传呢</div>
+                    <div data-page-node-id="N43v2js6PwvfiwwTzbptxJ" class="record-item" role="button" tabindex="0"><!--pnid:n8zlbI4Ast2Ae9I6kGX4V5-->给这个大肥鱼看成肌肉男了</div>
+                </div>
+
+                <div data-page-node-id="KeLhlud6a6lx9Qam6WS7hE" class="column">
+                    <div data-page-node-id="LE26MC8fCMh5Nv6bD9BYVS" class="record-item" role="button" tabindex="0"><!--pnid:o3Ug3W2XBNfZIMgxy5gEfO-->神秘华佗扣我 1000，合着我成无能的丈夫了</div>
+                    <div data-page-node-id="bSMAcoXG8oHADPOgnDezAD" class="record-item" role="button" tabindex="0"><!--pnid:XI4OJFsEQ3m4iSgM20w9I9-->我就在这里刷屏了，看是我手速快还是他手速快</div>
+                    <div data-page-node-id="new-3" class="record-item" role="button" tabindex="0"><span class="mention">@有问题请私聊反馈</span> 我特么被山神禁言了</div>
+                    <div data-page-node-id="eL6BlxbphJ2Y6mJFfUwsNJ" class="record-item danger" role="button" tabindex="0"><!--pnid:XUBCwGgsoBCmzv77VxWfnd-->有本事来打个决斗 😡</div>
+                    <div data-page-node-id="Tez6sZtScqcSqVfEWpzXZ3" class="record-item" role="button" tabindex="0"><!--pnid:eRWsQIWRUYEP9BGVpHD2Ac-->神秘话筒刚才给我禁言了</div>
+                    <div data-page-node-id="new-4" class="record-item" role="button" tabindex="0">我就发谁是gay而已</div>
+                    <div data-page-node-id="new-8" class="record-item" role="button" tabindex="0">他奶奶的，这沉重核心咋这么难出</div>
+                    <div data-page-node-id="khvg9JvLeSuIqB8A3WFUUY" class="record-item danger" role="button" tabindex="0"><!--pnid:COYtnfZw3S54z3tOuYougu-->我靠，神秘卡加载页面做的什么勾八服务器？什么勾八客户端</div>
+                    <div data-page-node-id="GonWUqpWgszC3kqj7eaKoP" class="record-item" role="button" tabindex="0"><!--pnid:kGqHwzFwZWa56It5ZAqjUt-->我明明都打死他了，然后他用图腾，神秘华佗和我打决斗犯规</div>
+                    <div data-page-node-id="bFdnwtgQDijOh4xKXTgHDV" class="record-item" role="button" tabindex="0"><!--pnid:VXQT2sacpJKJCFTQmECW4m-->神秘华佗直接退</div>
+                    <div data-page-node-id="AaCLMJcm9su24wgLEFCwiq" class="record-item" role="button" tabindex="0"><span data-page-node-id="bG6WdpfijAPgKtVj9Tvdpw" class="mention"><!--pnid:sj3HDhHAJG44pMGE0RLja4-->@接代打服主工作</span><!--pnid:AbHbfxG46PCkWw4owk1twt--> 你头像居然是肥美小正太</div>
+                    <div data-page-node-id="bmiNsqCLNLQbWJTCHa8hOl" class="record-item danger" role="button" tabindex="0"><span data-page-node-id="tX4cVdsiRXkQGXhRr8GpZ8" class="mention"><!--pnid:W4igTDiTiU802QrwBvGrg6-->@A机器傻子</span><!--pnid:PlXOL3E6Dorf47Hu1JgXI8--> 长这个屎样</div>
+                    <div data-page-node-id="nhcTP61KfaSlPrdNzre6PL" class="record-item" role="button" tabindex="0"><span data-page-node-id="yPMUQQEznQ7SDDT0lHkJwm" class="mention"><!--pnid:iVLvLDD0OHRboRH2VGlj8T-->@A机器傻子</span><!--pnid:WopbiKGbyBd0vFMbFQ4p6y--> 我是三逼，我是曹操专克</div>
+                </div>
+
+                <div data-page-node-id="zI8lFGuTSRTGv175CqZ1EW" class="column">
+                    <div data-page-node-id="l7Nm9ufM8ZSo82bYICitNY" class="record-item" role="button" tabindex="0"><!--pnid:rSfDkTxNrZ9XvmOAAw1Pzz-->华佗依旧隐身搞鬼，我看到了华佗在线</div>
+                    <div data-page-node-id="cPyrgK8QbBknouQWHsouo3" class="record-item" role="button" tabindex="0"><span data-page-node-id="zb2XKwaOLDgQnh8jX6FaHZ" class="mention"><!--pnid:ZL9T3Tdlul3jLvGNA5KAIM-->@接端跑路工作</span><!--pnid:ZvMM0t8xuqFbmvk2gdjilK--> 我绝对不会叫妈妈的</div>
+                    <div data-page-node-id="N22aj9JESsfXWEQ8GK5lwX" class="record-item" role="button" tabindex="0"><!--pnid:jdSmxqktv3LK0psjgL42Zy-->神人华佗在我家里放一大堆猫，放了几百个坚守者</div>
+                    <div data-page-node-id="new-5" class="record-item danger" role="button" tabindex="0"><span class="mention">@有问题请私聊反馈</span> 华佗还欠我3只硫方怪😡全给我清了</div>
+                    <div data-page-node-id="NXUVWNQR26Y0pN1md2XoZS" class="record-item" role="button" tabindex="0"><span data-page-node-id="JSnN8JXYJ11tSCFx2zg6r3" class="mention"><!--pnid:5GsOjVXN2w1D6fBvBGFvWQ-->@接压力服主工作</span><!--pnid:qE2nT8mSqBsKHCUB1JJaQu--> 你一直设也一样</div>
+                    <div data-page-node-id="MtNSVvrwAunS0uO0DeJlpB" class="record-item danger" role="button" tabindex="0"><!--pnid:lGj4r8KRPmP3BZSdPT9Ly5-->不是不是，肯定是你服务器问题，我现在都进去了。不是又崩了？别血口喷人</div>
+                    <div data-page-node-id="4zFm3opTRyY7v4RwYdNzLq" class="record-item" role="button" tabindex="0"><!--pnid:GkFRDCzIiF6rwkCXgLFHhM-->我现在已经是富豪了好吧，直接展示财富。我去我去，还好这机器人不会真执行命令，1 分没少</div>
+                    <div data-page-node-id="new-6" class="record-item" role="button" tabindex="0">史山赶紧铲了吧 做的什么够吧服务器</div>
+                    <div data-page-node-id="FVX02U2mRQRkVkdwpwhTCw" class="record-item" role="button" tabindex="0"><!--pnid:1ZXqsGEYDA5yYN8w79bmWZ-->不用了，智障永远教不会</div>
+                    <div data-page-node-id="NoCSxv1wrs3qXGJdXj3ZYi" class="record-item" role="button" tabindex="0"><!--pnid:HpsjHyC7TFrXEVnGRCJ1UM-->21ove_[附魔书 x1] kskbl 玩了附魔冲突了</div>
+                    <div data-page-node-id="new-7" class="record-item" role="button" tabindex="0">逛了一圈还是石山阁好玩</div>
+                    <div data-page-node-id="e1Es8wh1Vby7HhCDCcHWGJ" class="record-item danger" role="button" tabindex="0"><!--pnid:1cCFbMBetY2gh0oneQBLgh-->21ove 这种附魔要重新打的 kskbl 能退吗</div>
+                    <div data-page-node-id="MS3lJ22fjVCWRH57FuSsX9" class="record-item" role="button" tabindex="0"><!--pnid:UxK0MLHGfLb3X3EmoFBQYW-->21ove_要重新打一套，附魔书给我，退你 1 块钱</div>
+                    <div data-page-node-id="a4rsgIPqLE32guu9k1etzk" class="record-item" role="button" tabindex="0"><!--pnid:RIybOKWwQYczFeGYK3g5Tl-->21ove_这几个附魔都需要重新打附魔，利刃跟锋利冲突好像，你没问啊我以为你知道</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div data-page-node-id="9HZnd3SBsGUDlJKoNFQFKG" aria-label="档案记录详情" aria-modal="true" class="modal-overlay" id="modalOverlay" role="dialog">
+        <div data-page-node-id="fPTC4VM5ZyKEQXTRj0HXkd" class="modal-content-wrapper">
+            <button data-page-node-id="tAFzlGa2ND7U92WCBN4yom" aria-label="关闭详情" class="close-btn" id="closeBtn" type="button">
+                <span data-page-node-id="ONjax7OScbMwHzI21CPJH7" aria-hidden="true" class="close-glyph"><!--pnid:hhIlJwoOS0tFM2iu7cfO0i-->×</span><span data-page-node-id="VjMWATw2XAr1UMeKLGPke1" class="close-text"><!--pnid:zHRva9tmJ2CxQAwAJhgVLx-->关闭</span>
+            </button>
+            <div data-page-node-id="jdFVxcee2WdOQHgKDaEgRY" class="modal-content" id="modalContent"></div>
+        </div>
+    </div>
+
+    <script data-page-node-id="KV581zWlxixW1C3fMLHR9e" data-pnid-children="x6ne7R5jJT1oStEfXG5oYf">
+        /* ============================================================
+           0. 全局常量
+           ============================================================ */
+        const COPY_SUFFIX = '\n\n来自：我的世界拾光阁服务器 - 服务器地址：mcsgg.top - 版本：26.2 - 离线可进';
+
+        /* ============================================================
+           1. 入场虚化（动画结束后移除节点，避免常驻 backdrop-filter）
+           ============================================================ */
+        (function initEnterVeil() {
+            const veil = document.querySelector('.enter-veil');
+            if (!veil) return;
+            const remove = () => {
+                if (veil.parentNode) veil.parentNode.removeChild(veil);
+            };
+            veil.addEventListener('animationend', remove, { once: true });
+            // 兜底：reduced-motion 或异常情况下也保证移除
+            setTimeout(remove, 1600);
+        })();
+
+        /* ============================================================
+           2. 全站复制拦截：任何 copy 事件都追加服务器后缀
+           ============================================================ */
+        (function initGlobalCopySuffix() {
+            document.addEventListener('copy', function (e) {
+                let text = '';
+                try {
+                    const sel = document.getSelection();
+                    if (sel) text = sel.toString();
+                } catch (err) {}
+                if (!text) {
+                    try {
+                        text = (e.clipboardData && e.clipboardData.getData('text/plain')) || '';
+                    } catch (err) {}
+                }
+                if (!text) return;
+                if (text.indexOf('来自：我的世界拾光阁服务器') !== -1) return;
+
+                if (e.clipboardData) {
+                    e.clipboardData.setData('text/plain', text + COPY_SUFFIX);
+                    e.preventDefault();
+                } else if (window.clipboardData) {
+                    window.clipboardData.setData('Text', text + COPY_SUFFIX);
+                    e.returnValue = false;
+                }
+            });
+        })();
+
+        /* ============================================================
+           3. 多 Toast 堆叠（3 秒自动消失，动画结束移除节点）
+           ============================================================ */
+        (function initToast() {
+            const stack = document.getElementById('toastStack');
+            if (!stack) return;
+            const MAX = 4;
+
+            window.showToast = function (msg) {
+                if (!msg) return;
+                // 超过上限移除最早添加的一个（column-reverse 下视觉最下方）
+                while (stack.children.length >= MAX) {
+                    stack.firstElementChild.remove();
+                }
+                const el = document.createElement('div');
+                el.className = 'toast';
+                el.textContent = msg;
+                stack.appendChild(el);
+
+                const cleanup = () => {
+                    if (el.parentNode) el.parentNode.removeChild(el);
+                };
+                el.addEventListener('animationend', cleanup, { once: true });
+                // 兜底：动画被禁用时也保证 3.4s 内移除
+                setTimeout(cleanup, 3400);
+            };
+        })();
+
+        /* ============================================================
+           4. 流光线高度同步
+           ============================================================ */
+        (function initFlowHeights() {
+            const columns = Array.from(document.querySelectorAll('.columns-wrapper > .column'));
+            if (!columns.length) return;
+
+            let syncRaf = 0;
+            function sync() {
+                for (let i = 0; i < columns.length; i++) {
+                    columns[i].style.setProperty('--flow-h', (columns[i].offsetHeight + 96) + 'px');
+                }
+            }
+            function scheduleSync() {
+                if (syncRaf) return;
+                syncRaf = requestAnimationFrame(() => {
+                    syncRaf = 0;
+                    sync();
+                });
+            }
+
+            requestAnimationFrame(sync);
+
+            if ('ResizeObserver' in window) {
+                const ro = new ResizeObserver(scheduleSync);
+                columns.forEach(c => ro.observe(c));
+            } else {
+                window.addEventListener('resize', scheduleSync);
+            }
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(scheduleSync).catch(() => {});
+            }
+        })();
+
+        /* ============================================================
+           5. 三态主题开关（含 Toast 提示）
+           ============================================================ */
+        (function initThemeSwitcher() {
+            const switcher = document.getElementById('themeSwitcher');
+            const track = document.getElementById('themeTrack');
+            const thumb = document.getElementById('themeThumb');
+            const options = track.querySelectorAll('.theme-option');
+            const modes = ['light', 'system', 'dark'];
+            const STORAGE_KEY = 'huatuo-theme-mode';
+            const root = document.documentElement;
+
+            const DRAG_THRESHOLD = 8;
+
+            const toastText = {
+                light: '已切换到浅色模式',
+                system: '已跟随系统外观',
+                dark: '已切换到深色模式'
+            };
+
+            let currentMode = 'system';
+            let dragging = false;
+            let moved = false;
+            let startX = 0;
+            let startOffset = 0;
+            let currentOffset = 0;
+            let activePointerId = null;
+            let cachedSegW = 40;
+            let cachedBorderLeft = 0;
+            let moveRaf = 0;
+            let pendingOffset = 0;
+
+            function measure() {
+                const cs = getComputedStyle(track);
+                cachedBorderLeft = parseFloat(cs.borderLeftWidth) || 0;
+                const innerW = track.clientWidth;
+                cachedSegW = innerW > 6 ? (innerW - 6) / 3 : 40;
+            }
+
+            function indexFromClientX(clientX) {
+                const rect = track.getBoundingClientRect();
+                const u = clientX - rect.left - cachedBorderLeft;
+                const idx = Math.floor((u - 3) / (cachedSegW || 1));
+                return Math.max(0, Math.min(2, idx));
+            }
+
+            function setThumb(offset, animate) {
+                currentOffset = offset;
+                if (!animate) thumb.style.transition = 'none';
+                thumb.style.transform = 'translate3d(' + offset + 'px,0,0)';
+                if (!animate) {
+                    void thumb.offsetWidth;
+                    thumb.style.transition = '';
+                }
+            }
+
+            function systemPrefersDark() {
+                try {
+                    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            function resolveTheme(mode) {
+                if (mode === 'system') {
+                    return systemPrefersDark() ? 'dark' : 'light';
+                }
+                return mode;
+            }
+
+            function applyMode(mode, persist) {
+                currentMode = mode;
+
+                root.classList.add('theme-anim-off');
+                root.setAttribute('data-theme', resolveTheme(mode));
+                track.dataset.active = mode;
+                setThumb(modes.indexOf(mode) * cachedSegW, true);
+                options.forEach(el => {
+                    el.setAttribute('aria-checked', el.dataset.mode === mode ? 'true' : 'false');
+                });
+                void root.offsetWidth;
+                root.classList.remove('theme-anim-off');
+
+                if (persist) {
+                    try { localStorage.setItem(STORAGE_KEY, mode); } catch (e) {}
+                    if (typeof window.showToast === 'function') {
+                        window.showToast(toastText[mode] || '已切换主题');
+                    }
+                }
+            }
+
+            let saved = null;
+            try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) {}
+            if (!saved || !modes.includes(saved)) saved = 'system';
+
+            requestAnimationFrame(() => {
+                measure();
+                applyMode(saved, false);
+            });
+
+            const darkMQ = window.matchMedia('(prefers-color-scheme: dark)');
+            function onSystemThemeChange() {
+                if (currentMode === 'system') applyMode('system', false);
+            }
+            if (typeof darkMQ.addEventListener === 'function') {
+                darkMQ.addEventListener('change', onSystemThemeChange);
+            } else if (typeof darkMQ.addListener === 'function') {
+                darkMQ.addListener(onSystemThemeChange);
+            }
+
+            track.addEventListener('pointerdown', (e) => {
+                if (e.button > 0) return;
+                e.preventDefault();
+
+                dragging = true;
+                moved = false;
+                startX = e.clientX;
+                measure();
+                startOffset = currentOffset;
+                activePointerId = e.pointerId;
+
+                try { track.setPointerCapture(e.pointerId); } catch (err) {}
+            });
+
+            track.addEventListener('pointermove', (e) => {
+                if (!dragging || e.pointerId !== activePointerId) return;
+
+                const dx = e.clientX - startX;
+                if (!moved && Math.abs(dx) > DRAG_THRESHOLD) {
+                    moved = true;
+                    switcher.classList.add('dragging');
+                }
+                if (!moved) return;
+
+                const offset = Math.max(0, Math.min(cachedSegW * 2, startOffset + dx));
+                pendingOffset = offset;
+
+                if (!moveRaf) {
+                    moveRaf = requestAnimationFrame(() => {
+                        moveRaf = 0;
+                        setThumb(pendingOffset, false);
+                    });
+                }
+            });
+
+            function endDrag(e, cancelled) {
+                if (!dragging || e.pointerId !== activePointerId) return;
+
+                dragging = false;
+                try { track.releasePointerCapture(e.pointerId); } catch (err) {}
+                activePointerId = null;
+                switcher.classList.remove('dragging');
+
+                if (moveRaf) {
+                    cancelAnimationFrame(moveRaf);
+                    moveRaf = 0;
+                    setThumb(pendingOffset, false);
+                }
+
+                let targetIdx;
+                if (cancelled) {
+                    setThumb(startOffset, true);
+                    moved = false;
+                    return;
+                } else if (moved) {
+                    targetIdx = Math.round(currentOffset / (cachedSegW || 1));
+                } else {
+                    targetIdx = indexFromClientX(e.clientX);
+                }
+
+                targetIdx = Math.max(0, Math.min(2, targetIdx));
+                applyMode(modes[targetIdx], true);
+                moved = false;
+            }
+
+            track.addEventListener('pointerup', (e) => endDrag(e, false));
+            track.addEventListener('pointercancel', (e) => endDrag(e, true));
+
+            switcher.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    let idx = modes.indexOf(currentMode);
+                    idx += e.key === 'ArrowRight' ? 1 : -1;
+                    idx = Math.max(0, Math.min(2, idx));
+                    applyMode(modes[idx], true);
+                }
+            });
+
+            let resizeRaf = 0;
+            window.addEventListener('resize', () => {
+                if (resizeRaf) return;
+                resizeRaf = requestAnimationFrame(() => {
+                    resizeRaf = 0;
+                    measure();
+                    setThumb(modes.indexOf(currentMode) * cachedSegW, false);
+                });
+            });
+        })();
+
+        /* ============================================================
+           6. 缩放模糊遮罩（全宽度触发，加强虚化）
+           ============================================================ */
+        (function initResizeMask() {
+            const mask = document.getElementById('maskOverlay');
+            let timer;
+            let lastW = window.innerWidth;
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth === lastW) return;
+                lastW = window.innerWidth;
+
+                // 任何宽度变化都显示蒙版
+                mask.classList.add('active');
+                document.body.classList.add('is-resizing');
+
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    mask.classList.remove('active');
+                    document.body.classList.remove('is-resizing');
+                }, 340);
+            });
+        })();
+
+        /* ============================================================
+           7. 顶部磨砂（滚动越过标题时激活）
+           ============================================================ */
+        (function initTopScrim() {
+            const scrim = document.getElementById('topScrim');
+            const header = document.getElementById('boardHeader');
+            if (!scrim || !header) return;
+
+            let raf = 0;
+            let active = false;
+
+            function update() {
+                raf = 0;
+                const rect = header.getBoundingClientRect();
+                const shouldShow = rect.bottom < 96;
+                if (shouldShow !== active) {
+                    active = shouldShow;
+                    scrim.classList.toggle('active', active);
+                }
+            }
+
+            function schedule() {
+                if (!raf) raf = requestAnimationFrame(update);
+            }
+
+            window.addEventListener('scroll', schedule, { passive: true });
+            window.addEventListener('resize', schedule, { passive: true });
+            update();
+        })();
+
+        /* ============================================================
+           8. 水波纹 + 弹窗 + 复制按钮
+           ============================================================ */
+        (function initInteractions() {
+            const items = Array.from(document.querySelectorAll('.record-item'));
+            const total = items.length;
+            const modalOverlay = document.getElementById('modalOverlay');
+            const modalContent = document.getElementById('modalContent');
+            const closeBtn = document.getElementById('closeBtn');
+            const boardWrapper = document.getElementById('boardWrapper');
+            const themeSwitcher = document.getElementById('themeSwitcher');
+
+            let reduceMotion = false;
+            try {
+                reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            } catch (e) {}
+
+            let lastFocus = null;
+
+            function setBackgroundInert(on) {
+                [boardWrapper, themeSwitcher].forEach(el => {
+                    if (!el) return;
+                    try {
+                        if (on) el.setAttribute('inert', '');
+                        else el.removeAttribute('inert');
+                    } catch (e) {}
+                });
+            }
+
+            function openModal(sourceEl, index) {
+                const snapshotHTML = sourceEl.innerHTML;
+
+                const rect = sourceEl.getBoundingClientRect();
+                const x = (sourceEl._lastClickX ?? rect.left + rect.width / 2) - rect.left;
+                const y = (sourceEl._lastClickY ?? rect.top + rect.height / 2) - rect.top;
+
+                if (!reduceMotion) {
+                    const ripple = document.createElement('span');
+                    ripple.className = 'ripple';
+                    const size = Math.max(rect.width, rect.height) * 2;
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = (x - size / 2) + 'px';
+                    ripple.style.top = (y - size / 2) + 'px';
+                    sourceEl.appendChild(ripple);
+                    ripple.addEventListener('animationend', () => {
+                        if (ripple.parentNode) ripple.parentNode.removeChild(ripple);
+                    }, { once: true });
+                }
+
+                modalContent.innerHTML = snapshotHTML;
+                if (sourceEl.classList.contains('danger')) {
+                    modalContent.classList.add('danger');
+                } else {
+                    modalContent.classList.remove('danger');
+                }
+
+                const actions = document.createElement('div');
+                actions.className = 'modal-actions';
+
+                const idx = document.createElement('span');
+                idx.className = 'modal-index';
+                idx.textContent = '第 ' + index + ' 条 / 共 ' + total + ' 条';
+
+                const copyBtn = document.createElement('button');
+                copyBtn.type = 'button';
+                copyBtn.className = 'modal-copy';
+                copyBtn.textContent = '复制内容';
+
+                copyBtn.addEventListener('click', () => {
+                    copyBtn.classList.remove('pop');
+                    void copyBtn.offsetWidth;
+                    copyBtn.classList.add('pop');
+                    copyText(sourceEl.innerText, copyBtn);
+                });
+                copyBtn.addEventListener('animationend', (ev) => {
+                    if (ev.animationName === 'copyPop') copyBtn.classList.remove('pop');
+                });
+
+                actions.appendChild(idx);
+                actions.appendChild(copyBtn);
+                modalContent.appendChild(actions);
+
+                modalContent.classList.remove('no-scroll');
+                modalContent.scrollTop = 0;
+                modalContent.scrollLeft = 0;
+
+                lastFocus = document.activeElement;
+                setBackgroundInert(true);
+                document.body.classList.add('modal-open');
+                modalOverlay.classList.add('active');
+                requestAnimationFrame(() => {
+                    if (modalContent.scrollHeight <= modalContent.clientHeight + 1) {
+                        modalContent.classList.add('no-scroll');
+                    }
+                });
+                function focusCloseBtn(attempt) {
+                    if (!modalOverlay.classList.contains('active')) return;
+                    if (!modalOverlay.contains(document.activeElement)) {
+                        closeBtn.focus({ preventScroll: true });
+                    }
+                    if (attempt < 2) {
+                        setTimeout(() => focusCloseBtn(attempt + 1), 100);
+                    }
+                }
+                setTimeout(() => focusCloseBtn(0), 60);
+            }
+
+            function closeModal() {
+                if (!modalOverlay.classList.contains('active')) return;
+                modalOverlay.classList.remove('active');
+                document.body.classList.remove('modal-open');
+                setBackgroundInert(false);
+                if (lastFocus && typeof lastFocus.focus === 'function') {
+                    lastFocus.focus({ preventScroll: true });
+                }
+                lastFocus = null;
+            }
+
+            items.forEach((item, i) => {
+                item.addEventListener('click', function (e) {
+                    this._lastClickX = e.clientX;
+                    this._lastClickY = e.clientY;
+                    openModal(this, i + 1);
+                });
+                item.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        openModal(this, i + 1);
+                    }
+                });
+            });
+
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) closeModal();
+            });
+
+            closeBtn.addEventListener('click', closeModal);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+
+            modalOverlay.addEventListener('keydown', (e) => {
+                if (e.key !== 'Tab' || !modalOverlay.classList.contains('active')) return;
+                const focusables = modalOverlay.querySelectorAll('button');
+                if (!focusables.length) return;
+                const first = focusables[0];
+                const last = focusables[focusables.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            });
+
+            async function copyText(text, btn) {
+                const payload = text + COPY_SUFFIX;
+                let ok = false;
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(payload);
+                        ok = true;
+                    } else {
+                        ok = fallbackCopySync(text);
+                    }
+                } catch (e) {
+                    ok = fallbackCopySync(text);
+                }
+
+                btn.textContent = ok ? '已复制 ✓' : '复制失败';
+                btn.classList.toggle('copied', ok);
+                if (typeof window.showToast === 'function') {
+                    window.showToast(ok ? '已复制到剪贴板' : '复制失败，请手动选择');
+                }
+                setTimeout(() => {
+                    btn.textContent = '复制内容';
+                    btn.classList.remove('copied');
+                }, 1400);
+            }
+
+            function fallbackCopySync(text) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.setAttribute('readonly', '');
+                ta.style.position = 'fixed';
+                ta.style.top = '-999px';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                let ok = false;
+                try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+                document.body.removeChild(ta);
+                return ok;
+            }
+        })();
+    </script>
+</body>
+</html>
