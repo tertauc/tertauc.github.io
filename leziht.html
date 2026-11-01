@@ -1492,8 +1492,6 @@
     <div data-page-node-id="QyLGGCLQaH51iwKy3XWvLN" class="page-bg page-bg--light" aria-hidden="true"></div>
     <div data-page-node-id="QyLGGCLQaH51iwKy3XWvLN-d" class="page-bg page-bg--dark" aria-hidden="true"></div>
 
-    <div data-page-node-id="QyLGGCLQaH51iwKy3XWvLN-m" class="mask-overlay" id="maskOverlay"></div>
-
     <!-- 顶部磨砂 scrim -->
     <div data-page-node-id="top-scrim-1" class="top-scrim" id="topScrim" aria-hidden="true"></div>
 
@@ -1950,61 +1948,6 @@
                     setThumb(modes.indexOf(currentMode) * cachedSegW, false);
                 });
             });
-        })();
-
-        /* ============================================================
-           6. 缩放模糊遮罩（全宽度触发，加强虚化）
-           ============================================================ */
-        (function initMotionBlur() {
-            const mask = document.getElementById('maskOverlay');
-            if (!mask) return;
-            const body = document.body;
-            let releaseTimer = 0;
-            let resizeTimer = 0;
-            let lastY = window.scrollY;
-            let lastTime = performance.now();
-            let active = false;
-
-            const setActive = (on) => {
-                if (active === on) return;
-                active = on;
-                mask.classList.toggle('active', on);
-                body.classList.toggle('is-resizing', on);
-            };
-            const pulse = (hold = 55) => {
-                setActive(true);
-                clearTimeout(releaseTimer);
-                releaseTimer = window.setTimeout(() => setActive(false), hold);
-            };
-
-            let scrollRaf = 0;
-            const updateScrollMotion = () => {
-                scrollRaf = 0;
-                const now = performance.now();
-                const y = window.scrollY;
-                const dt = Math.max(8, now - lastTime);
-                const speed = Math.abs(y - lastY) / dt;
-                lastY = y;
-                lastTime = now;
-                // 每帧最多处理一次；不在滚动过程中动态修改滤镜半径。
-                pulse(speed > 1.5 ? 90 : 62);
-            };
-            window.addEventListener('scroll', () => {
-                if (!scrollRaf) scrollRaf = requestAnimationFrame(updateScrollMotion);
-            }, { passive: true });
-
-            window.addEventListener('resize', () => {
-                pulse(80);
-                clearTimeout(resizeTimer);
-                resizeTimer = window.setTimeout(() => setActive(false), 110);
-            }, { passive: true });
-            window.addEventListener('pagehide', () => {
-                clearTimeout(releaseTimer);
-                clearTimeout(resizeTimer);
-                if (scrollRaf) cancelAnimationFrame(scrollRaf);
-                scrollRaf = 0;
-                setActive(false);
-            }, { once: true });
         })();
 
         /* ============================================================
