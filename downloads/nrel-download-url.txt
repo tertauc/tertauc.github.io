@@ -1,1 +1,1 @@
-https://github.com/tertauc/mc-nrel/releases/download/v0.9.3/nrel.exe
+https://github.com/tertauc/mc-nrel/releases/download/v0.10.0/nrel.exe
