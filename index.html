@@ -32,83 +32,78 @@
 
 <header class="site-header">
   <div class="wrap header-inner">
-    <a class="brand" href="./" aria-label="淂纛羙秹 首页">
-      <img class="brand-avatar" src="assets/images/avatar.png" alt="" width="20" height="20">
+    <a class="brand" href="#top" aria-label="淂纛羙秹 首页">
+      <img class="brand-avatar" src="assets/images/avatar.png" alt="" width="30" height="30">
       <span class="brand-name">淂纛羙秹</span>
     </a>
 
-    <nav class="nav-links" aria-label="站点导航">
-      <a href="projects/">项目</a>
-      <a href="time/">时间</a>
-      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换主题">
-        <svg class="theme-icon" data-mode="auto" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <rect x="2.5" y="4" width="19" height="13" rx="2.5"/>
-          <path d="M8.5 20.5h7M12 17v3.5"/>
-        </svg>
-        <svg class="theme-icon" data-mode="light" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <circle cx="12" cy="12" r="4.2"/>
-          <path d="M12 2.6v2.2M12 19.2v2.2M4.4 4.4l1.6 1.6M18 18l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.4 19.6 6 18M18 6l1.6-1.6"/>
-        </svg>
-        <svg class="theme-icon" data-mode="dark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z"/>
-        </svg>
-      </button>
-    </nav>
+    <!-- 主题切换：自动 → 浅色 → 深色 循环 -->
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换主题">
+      <svg class="theme-icon" data-mode="auto" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="2.5" y="4" width="19" height="13" rx="2.5"/>
+        <path d="M8.5 20.5h7M12 17v3.5"/>
+      </svg>
+      <svg class="theme-icon" data-mode="light" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle cx="12" cy="12" r="4.2"/>
+        <path d="M12 2.6v2.2M12 19.2v2.2M4.4 4.4l1.6 1.6M18 18l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.4 19.6 6 18M18 6l1.6-1.6"/>
+      </svg>
+      <svg class="theme-icon" data-mode="dark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z"/>
+      </svg>
+    </button>
   </div>
 </header>
 
 <main id="main">
-  <!-- 首屏 -->
-  <section class="tile tile--light home-hero">
-    <div class="wrap home-hero-inner">
-      <img class="home-avatar" src="assets/images/avatar.png" alt="淂纛羙秹 的头像" width="96" height="96">
-      <h1 class="home-name">淂纛羙秹</h1>
-      <div class="home-actions">
-        <a class="btn btn--primary" href="projects/">查看项目</a>
-        <a class="btn btn--secondary" href="time/">全屏时间</a>
+  <!-- 名字与头像 -->
+  <section class="hero" id="top">
+    <div class="wrap hero-inner">
+      <div class="hero-avatar">
+        <img src="assets/images/avatar.png" alt="淂纛羙秹 的头像" width="128" height="128">
       </div>
+      <h1 class="hero-name">淂纛羙秹</h1>
     </div>
   </section>
 
-  <!-- 项目 -->
-  <section class="tile tile--parchment" id="projects" aria-labelledby="projects-title">
-    <div class="wrap reveal">
+  <div class="wrap">
+    <!-- 项目 -->
+    <section class="section reveal" id="projects" aria-labelledby="projects-title">
       <h2 class="section-title" id="projects-title">项目</h2>
-
-      <a class="entry" href="projects/">
-        <span class="entry-icons" aria-hidden="true">
-          <img src="assets/images/icon.png" alt="" width="56" height="56">
-          <img src="assets/images/pack.png" alt="" width="56" height="56">
-          <img src="assets/images/nrel.svg" alt="" width="56" height="56">
+      <a class="projects-entry" href="projects/">
+        <span class="projects-entry-main">
+          <span class="projects-entry-eyebrow">Projects</span>
+          <span class="projects-entry-title">全部项目</span>
         </span>
-        <span class="entry-body">
-          <span class="entry-title">全部项目</span>
+        <span class="projects-entry-avatars" aria-hidden="true">
+          <img src="assets/images/icon.png" alt="" width="34" height="34">
+          <img src="assets/images/pack.png" alt="" width="34" height="34">
+          <img src="assets/images/nrel.svg" alt="" width="34" height="34">
         </span>
-        <span class="entry-action" aria-hidden="true">查看全部 →</span>
+        <svg class="projects-entry-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M7 17 17 7M9 7h8v8"/>
+        </svg>
       </a>
-    </div>
-  </section>
+    </section>
 
-  <!-- 工具 -->
-  <section class="tile tile--dark" id="tools" aria-labelledby="tools-title">
-    <div class="wrap reveal">
+    <!-- 工具 -->
+    <section class="section reveal" aria-labelledby="tools-title">
       <h2 class="section-title" id="tools-title">工具</h2>
-      <p class="tile-lead">全屏时间</p>
-      <p style="margin-top: 28px;">
-        <a class="btn btn--primary" href="time/">打开</a>
-      </p>
-    </div>
-  </section>
+      <a class="projects-entry projects-entry--tool" href="time/">
+        <span class="projects-entry-main">
+          <span class="projects-entry-eyebrow">Time</span>
+          <span class="projects-entry-title">全屏时间</span>
+        </span>
+        <svg class="projects-entry-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M7 17 17 7M9 7h8v8"/>
+        </svg>
+      </a>
+    </section>
+  </div>
 </main>
 
 <footer class="site-footer">
   <div class="wrap footer-inner">
     <p>© <span id="year">2026</span> 淂纛羙秹</p>
-    <nav class="footer-links" aria-label="页脚导航">
-      <a href="./">首页</a>
-      <a href="projects/">项目</a>
-      <a href="time/">时间</a>
-    </nav>
   </div>
 </footer>
 
