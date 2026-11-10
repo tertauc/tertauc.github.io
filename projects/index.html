@@ -35,119 +35,116 @@
 <link rel="stylesheet" href="../assets/css/styles.css">
 <style>
   /* =========================================================
-     项目总览页局部样式（继承全站主题变量）
+     项目总览页局部样式
      ========================================================= */
+  .projects-hero {
+    padding: 80px 0 48px;
+  }
 
-  .projects-hero { padding: 40px 0 4px; }
+  /* ---------- 磨砂子导航 ---------- */
+  .subnav {
+    position: sticky;
+    top: 44px;
+    z-index: 50;
+    height: 52px;
+    background: color-mix(in srgb, var(--parchment) 80%, transparent);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+  }
 
-  .projects-head {
+  .subnav-inner {
+    height: 52px;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 18px;
+    gap: 16px;
   }
-  .projects-head-text h1 {
-    font-size: clamp(2.1rem, 5vw, 2.9rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-  }
-  .projects-head-text p {
-    margin-top: 6px;
-    font-size: 0.98rem;
-    color: var(--text-muted);
+
+  .subnav-title {
+    font-family: var(--font-display);
+    font-size: 21px;
+    font-weight: 600;
+    letter-spacing: 0.231px;
   }
 
   /* ---------- 视图切换 ---------- */
   .view-switch {
     display: inline-flex;
     gap: 2px;
-    padding: 4px;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 999px;
+    padding: 2px;
+    background: color-mix(in srgb, var(--ink) 6%, transparent);
+    border-radius: 9999px;
   }
+
   .view-btn {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    padding: 8px 16px;
-    font: inherit;
-    font-size: 0.86rem;
-    font-weight: 600;
-    color: var(--text-muted);
+    gap: 6px;
+    padding: 7px 14px;
+    font-family: var(--font-text);
+    font-size: 12px;
+    letter-spacing: -0.12px;
+    color: var(--muted);
     background: transparent;
     border: 0;
-    border-radius: 999px;
+    border-radius: 9999px;
     cursor: pointer;
-    transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
-  .view-btn svg { width: 16px; height: 16px; }
-  .view-btn:hover { color: var(--text); }
+  .view-btn svg { width: 14px; height: 14px; }
+  .view-btn:hover { color: var(--ink); }
   .view-btn.is-active {
-    color: var(--text);
-    background: var(--surface);
-    box-shadow: var(--shadow);
+    color: var(--accent);
+    background: var(--canvas);
   }
+  .view-btn:active { transform: scale(0.95); }
 
-  /* ---------- 项目列表 ---------- */
+  /* ---------- 项目网格 ---------- */
   .projects-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
+    gap: 24px;
   }
 
   .pcard {
     display: grid;
-    grid-template-columns: 46px minmax(0, 1fr) 18px;
+    grid-template-columns: 64px minmax(0, 1fr) 18px;
     grid-template-areas:
       "icon title arrow"
-      "desc desc desc"
       "tags tags tags";
     align-items: center;
-    gap: 12px 14px;
+    gap: 16px;
     padding: 24px;
-    color: var(--text);
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    transition: transform 0.22s ease, box-shadow 0.22s ease,
-      border-color 0.22s ease, background-color 0.3s ease;
+    color: var(--ink);
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-radius: 18px;
+    transition: background-color 0.2s ease;
   }
-  .pcard:hover {
-    text-decoration: none;
-    transform: translateY(-3px);
-    border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
-    box-shadow: var(--shadow-hover);
-  }
+  .pcard:hover { background: var(--pearl); }
 
   .pcard-icon {
     grid-area: icon;
-    width: 46px;
-    height: 46px;
-    border-radius: 12px;
-    overflow: hidden;
-    background: var(--accent-soft);
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    box-shadow: var(--product-shadow);
   }
   .pcard-icon img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    display: block;
+    border-radius: 8px;
   }
 
   .pcard-title {
     grid-area: title;
-    font-size: 1.08rem;
-    font-weight: 700;
-  }
-
-  .pcard-desc {
-    grid-area: desc;
-    align-self: start;
-    font-size: 0.94rem;
-    color: var(--text-muted);
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.374px;
+    line-height: 1.24;
   }
 
   .pcard-tags {
@@ -160,15 +157,10 @@
 
   .pcard-arrow {
     grid-area: arrow;
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     justify-self: end;
-    color: var(--text-muted);
-    transition: color 0.2s ease, transform 0.2s ease;
-  }
-  .pcard:hover .pcard-arrow {
     color: var(--accent);
-    transform: translate(2px, -2px);
   }
 
   /* ---------- 列表视图 ---------- */
@@ -177,16 +169,14 @@
     gap: 12px;
   }
   html[data-projects-view="list"] .pcard {
-    grid-template-columns: 46px minmax(110px, 0.85fr) minmax(0, 1.5fr) auto 18px;
-    grid-template-areas: "icon title desc tags arrow";
-    gap: 14px 18px;
-    padding: 16px 22px;
+    grid-template-columns: 48px minmax(0, 1fr) auto 18px;
+    grid-template-areas: "icon title tags arrow";
+    gap: 14px 20px;
+    padding: 16px 24px;
   }
-  html[data-projects-view="list"] .pcard-desc {
-    align-self: center;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+  html[data-projects-view="list"] .pcard-icon {
+    width: 48px;
+    height: 48px;
   }
   html[data-projects-view="list"] .pcard-tags {
     flex-wrap: nowrap;
@@ -194,39 +184,31 @@
   }
 
   /* ---------- 响应式 ---------- */
-  @media (max-width: 860px) {
+  @media (max-width: 1068px) {
     .projects-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 
-  @media (max-width: 780px) {
+  @media (max-width: 833px) {
+    .projects-hero { padding: 64px 0 40px; }
     html[data-projects-view="list"] .pcard {
-      grid-template-columns: 46px minmax(0, 1fr) 18px;
-      grid-template-areas:
-        "icon title arrow"
-        "desc desc desc"
-        "tags tags tags";
-      gap: 12px 14px;
-      padding: 20px;
+      grid-template-columns: 40px minmax(0, 1fr) auto 18px;
+      grid-template-areas: "icon title tags arrow";
+      gap: 12px;
+      padding: 16px 20px;
     }
-    html[data-projects-view="list"] .pcard-desc {
-      align-self: start;
-      overflow: visible;
-      white-space: normal;
-      text-overflow: clip;
-    }
+    html[data-projects-view="list"] .pcard-icon { width: 40px; height: 40px; }
     html[data-projects-view="list"] .pcard-tags {
-      flex-wrap: wrap;
-      justify-self: start;
+      flex-wrap: nowrap;
+      justify-self: end;
     }
   }
 
-  @media (max-width: 600px) {
-    .projects-hero { padding: 28px 0 0; }
+  @media (max-width: 640px) {
+    .projects-hero { padding: 48px 0 32px; }
     .projects-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-    .pcard { padding: 18px 20px; }
-    .view-switch { padding: 3px; }
-    .view-btn { padding: 7px 13px; font-size: 0.83rem; }
-    .view-btn svg { width: 15px; height: 15px; }
+    .pcard { padding: 20px; }
+    .subnav-title { font-size: 17px; letter-spacing: -0.374px; }
+    .view-btn { padding: 6px 11px; }
   }
 </style>
 </head>
@@ -236,76 +218,82 @@
 <header class="site-header">
   <div class="wrap header-inner">
     <a class="brand" href="../" aria-label="淂纛羙秹 首页">
-      <img class="brand-avatar" src="../assets/images/avatar.png" alt="" width="30" height="30">
+      <img class="brand-avatar" src="../assets/images/avatar.png" alt="" width="20" height="20">
       <span class="brand-name">淂纛羙秹</span>
     </a>
 
-    <!-- 主题切换：自动 → 浅色 → 深色 循环 -->
-    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换主题">
-      <svg class="theme-icon" data-mode="auto" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <rect x="2.5" y="4" width="19" height="13" rx="2.5"/>
-        <path d="M8.5 20.5h7M12 17v3.5"/>
-      </svg>
-      <svg class="theme-icon" data-mode="light" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <circle cx="12" cy="12" r="4.2"/>
-        <path d="M12 2.6v2.2M12 19.2v2.2M4.4 4.4l1.6 1.6M18 18l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.4 19.6 6 18M18 6l1.6-1.6"/>
-      </svg>
-      <svg class="theme-icon" data-mode="dark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z"/>
-      </svg>
-    </button>
+    <nav class="nav-links" aria-label="站点导航">
+      <a href="../">首页</a>
+      <a href="./" aria-current="page">项目</a>
+      <a href="../time/">时间</a>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换主题">
+        <svg class="theme-icon" data-mode="auto" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <rect x="2.5" y="4" width="19" height="13" rx="2.5"/>
+          <path d="M8.5 20.5h7M12 17v3.5"/>
+        </svg>
+        <svg class="theme-icon" data-mode="light" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="4.2"/>
+          <path d="M12 2.6v2.2M12 19.2v2.2M4.4 4.4l1.6 1.6M18 18l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.4 19.6 6 18M18 6l1.6-1.6"/>
+        </svg>
+        <svg class="theme-icon" data-mode="dark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z"/>
+        </svg>
+      </button>
+    </nav>
   </div>
 </header>
 
+<div class="subnav">
+  <div class="wrap subnav-inner">
+    <span class="subnav-title">项目</span>
+
+    <div class="view-switch" role="group" aria-label="切换项目视图">
+      <button class="view-btn" type="button" data-view-btn="grid" aria-pressed="true" title="卡片视图">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/>
+          <rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/>
+          <rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/>
+          <rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/>
+        </svg>
+        卡片
+      </button>
+      <button class="view-btn" type="button" data-view-btn="list" aria-pressed="false" title="列表视图">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M8 6h12M8 12h12M8 18h12"/>
+          <circle cx="4.2" cy="6" r="1.1" fill="currentColor" stroke="none"/>
+          <circle cx="4.2" cy="12" r="1.1" fill="currentColor" stroke="none"/>
+          <circle cx="4.2" cy="18" r="1.1" fill="currentColor" stroke="none"/>
+        </svg>
+        列表
+      </button>
+    </div>
+  </div>
+</div>
+
 <main id="main">
-  <div class="wrap">
-    <section class="projects-hero">
+  <section class="tile tile--light projects-hero">
+    <div class="wrap">
       <a class="back-link" href="../">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M19 12H5M11 18l-6-6 6-6"/>
         </svg>
         返回首页
       </a>
+      <h1 class="section-title">为 Minecraft 做的小东西。</h1>
+    </div>
+  </section>
 
-      <div class="projects-head">
-        <div class="projects-head-text">
-          <h1>项目</h1>
-        </div>
-
-        <div class="view-switch" role="group" aria-label="切换项目视图">
-          <button class="view-btn" type="button" data-view-btn="grid" aria-pressed="true" title="卡片视图（一行 3 个）">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/>
-              <rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/>
-              <rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/>
-              <rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/>
-            </svg>
-            卡片
-          </button>
-          <button class="view-btn" type="button" data-view-btn="list" aria-pressed="false" title="列表视图">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M8 6h12M8 12h12M8 18h12"/>
-              <circle cx="4.2" cy="6" r="1.1" fill="currentColor" stroke="none"/>
-              <circle cx="4.2" cy="12" r="1.1" fill="currentColor" stroke="none"/>
-              <circle cx="4.2" cy="18" r="1.1" fill="currentColor" stroke="none"/>
-            </svg>
-            列表
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <section class="section reveal" aria-label="项目列表">
+  <section class="tile tile--parchment reveal" aria-label="项目列表">
+    <div class="wrap">
       <div class="projects-grid">
         <a class="pcard" href="ender-ring-restorer/">
           <span class="pcard-icon" aria-hidden="true">
-            <img src="../assets/images/icon.png" alt="" width="46" height="46">
+            <img src="../assets/images/icon.png" alt="" width="64" height="64">
           </span>
           <span class="pcard-title">Ender Ring Restorer</span>
           <svg class="pcard-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M7 17 17 7M9 7h8v8"/>
           </svg>
-          <span class="pcard-desc">在 mc26.3+ 中恢复末地环状地形生成。</span>
           <span class="pcard-tags">
             <span class="tag">Minecraft</span>
             <span class="tag">模组</span>
@@ -315,13 +303,12 @@
 
         <a class="pcard" href="gunmu/">
           <span class="pcard-icon" aria-hidden="true">
-            <img src="../assets/images/pack.png" alt="" width="46" height="46">
+            <img src="../assets/images/pack.png" alt="" width="64" height="64">
           </span>
           <span class="pcard-title">Gunmu</span>
           <svg class="pcard-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M7 17 17 7M9 7h8v8"/>
           </svg>
-          <span class="pcard-desc">将 mc 中所有原版资源替换成滚木。</span>
           <span class="pcard-tags">
             <span class="tag">Minecraft</span>
             <span class="tag">资源包</span>
@@ -330,13 +317,12 @@
 
         <a class="pcard" href="nrel/">
           <span class="pcard-icon" aria-hidden="true">
-            <img src="../assets/images/nrel.svg" alt="" width="46" height="46">
+            <img src="../assets/images/nrel.svg" alt="" width="64" height="64">
           </span>
           <span class="pcard-title">NREL</span>
           <svg class="pcard-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M7 17 17 7M9 7h8v8"/>
           </svg>
-          <span class="pcard-desc">运行在命令行里的轻量 Minecraft 启动器。</span>
           <span class="pcard-tags">
             <span class="tag">Minecraft</span>
             <span class="tag">启动器</span>
@@ -344,13 +330,18 @@
           </span>
         </a>
       </div>
-    </section>
-  </div>
+    </div>
+  </section>
 </main>
 
 <footer class="site-footer">
   <div class="wrap footer-inner">
     <p>© <span id="year">2026</span> 淂纛羙秹</p>
+    <nav class="footer-links" aria-label="页脚导航">
+      <a href="../">首页</a>
+      <a href="./">项目</a>
+      <a href="../time/">时间</a>
+    </nav>
   </div>
 </footer>
 

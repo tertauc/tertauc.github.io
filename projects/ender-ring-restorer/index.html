@@ -33,24 +33,28 @@
 <header class="site-header">
   <div class="wrap header-inner">
     <a class="brand" href="../../" aria-label="淂纛羙秹 首页">
-      <img class="brand-avatar" src="../../assets/images/avatar.png" alt="" width="30" height="30">
+      <img class="brand-avatar" src="../../assets/images/avatar.png" alt="" width="20" height="20">
       <span class="brand-name">淂纛羙秹</span>
     </a>
 
-    <!-- 主题切换：自动 → 浅色 → 深色 循环 -->
-    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换主题">
-      <svg class="theme-icon" data-mode="auto" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <rect x="2.5" y="4" width="19" height="13" rx="2.5"/>
-        <path d="M8.5 20.5h7M12 17v3.5"/>
-      </svg>
-      <svg class="theme-icon" data-mode="light" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <circle cx="12" cy="12" r="4.2"/>
-        <path d="M12 2.6v2.2M12 19.2v2.2M4.4 4.4l1.6 1.6M18 18l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.4 19.6 6 18M18 6l1.6-1.6"/>
-      </svg>
-      <svg class="theme-icon" data-mode="dark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z"/>
-      </svg>
-    </button>
+    <nav class="nav-links" aria-label="站点导航">
+      <a href="../../">首页</a>
+      <a href="../">项目</a>
+      <a href="../../time/">时间</a>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换主题">
+        <svg class="theme-icon" data-mode="auto" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <rect x="2.5" y="4" width="19" height="13" rx="2.5"/>
+          <path d="M8.5 20.5h7M12 17v3.5"/>
+        </svg>
+        <svg class="theme-icon" data-mode="light" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="4.2"/>
+          <path d="M12 2.6v2.2M12 19.2v2.2M4.4 4.4l1.6 1.6M18 18l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.4 19.6 6 18M18 6l1.6-1.6"/>
+        </svg>
+        <svg class="theme-icon" data-mode="dark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z"/>
+        </svg>
+      </button>
+    </nav>
   </div>
 </header>
 
@@ -65,10 +69,9 @@
       </a>
 
       <div class="pack-head">
-        <img class="pack-icon" src="../../assets/images/icon.png" alt="Ender Ring Restorer 模组图标" width="88" height="88">
+        <img class="pack-icon" src="../../assets/images/icon.png" alt="Ender Ring Restorer 模组图标" width="96" height="96">
         <div class="pack-info">
           <h1>Ender Ring Restorer</h1>
-          <p>在 mc26.3+ 中恢复末地环状地形生成。</p>
           <span class="project-tags">
             <span class="tag">Minecraft</span>
             <span class="tag">模组</span>
@@ -79,7 +82,7 @@
     </div>
   </section>
 
-  <section class="section reveal" aria-labelledby="versions-title">
+  <section class="tile tile--parchment reveal" aria-labelledby="versions-title">
     <div class="wrap">
       <div class="versions-heading">
         <h2 id="versions-title">选择版本</h2>
@@ -136,6 +139,11 @@
 <footer class="site-footer">
   <div class="wrap footer-inner">
     <p>© <span id="year">2026</span> 淂纛羙秹</p>
+    <nav class="footer-links" aria-label="页脚导航">
+      <a href="../../">首页</a>
+      <a href="../">项目</a>
+      <a href="../../time/">时间</a>
+    </nav>
   </div>
 </footer>
 

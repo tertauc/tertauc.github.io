@@ -10,7 +10,7 @@
   var STORAGE_KEY = 'theme-preference';
   var MODES = ['auto', 'light', 'dark'];
   var LABELS = { auto: '跟随系统', light: '浅色', dark: '深色' };
-  var THEME_COLORS = { light: '#ffffff', dark: '#0b0e14' };
+  var THEME_COLORS = { light: '#ffffff', dark: '#000000' };
   var media = window.matchMedia('(prefers-color-scheme: dark)');
 
   /* ---------------- 主题 ---------------- */
