@@ -1,6 +1,14 @@
 /* ========================= 字体 ========================= */
 @font-face {
   font-family: "PingFangSC";
+  src: url("../../PingFangSC/PingFangSC-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "PingFangSC";
   src: url("../../PingFangSC/PingFangSC-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
@@ -577,6 +585,14 @@ ul { margin: 0; padding: 0; list-style: none; }
   box-shadow: 0 14px 28px -14px var(--accent);
 }
 .modrinth-btn svg { width: 17px; height: 17px; }
+
+/* 深色模式：浅色文字在深底上视觉偏粗，正文下调一档；Modrinth 按钮用白色字 */
+[data-theme="dark"] body { font-weight: 300; }
+[data-theme="dark"] h1,
+[data-theme="dark"] .modrinth-btn {
+  -webkit-text-stroke-width: 0.5px;
+}
+[data-theme="dark"] .modrinth-btn { color: #ffffff; }
 
 .versions-heading {
   display: flex;
