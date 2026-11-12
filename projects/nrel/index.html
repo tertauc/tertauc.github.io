@@ -468,13 +468,13 @@
 
           <div class="nrel-actions">
             <a class="nrel-btn nrel-btn--primary" id="download-btn"
-               href="https://github.com/tertauc/mc-nrel/releases/download/v0.12.2/nrel.exe">
+               href="https://github.com/tertauc/mc-nrel/releases/download/v0.12.3/nrel.exe">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <path d="M7 10l5 5 5-5M12 15V3"/>
               </svg>
               <span>下载最新版</span>
-              <span class="nrel-ver" id="download-version">最新版</span>
+              <span class="nrel-ver" id="download-version">v0.12.3</span>
             </a>
 
             <a class="nrel-btn nrel-btn--ghost" href="https://github.com/tertauc/mc-nrel"
@@ -501,7 +501,7 @@
             <span class="term-title">nrel.exe — 主界面</span>
           </div>
           <div class="term-body">
-            <div class="term-head">NREL · Minecraft Launcher <span id="term-version">v0.12.2</span></div>
+            <div class="term-head">NREL · Minecraft Launcher <span id="term-version">v0.12.3</span></div>
             <div class="term-item is-active"><span class="caret">›</span> 启动游戏 <span class="hint">Enter</span></div>
             <div class="term-item"><span class="caret">›</span> 选择版本 <span class="hint">/versions</span></div>
             <div class="term-item"><span class="caret">›</span> 账户管理 <span class="hint">/account</span></div>
@@ -638,36 +638,5 @@
 </footer>
 
 <script src="../../assets/js/main.js" defer></script>
-<script>
-  /* 下载地址统一取自 downloads/nrel-download-url.txt，便于以后替换版本 */
-  (function () {
-    var btn = document.getElementById('download-btn');
-    var verEl = document.getElementById('download-version');
-    var termVer = document.getElementById('term-version');
-    if (!btn) return;
-
-    var FALLBACK = 'https://github.com/tertauc/mc-nrel/releases/download/v0.12.2/nrel.exe';
-
-    function apply(url) {
-      url = (url || '').trim();
-      if (!url) return;
-      btn.setAttribute('href', url);
-      var match = url.match(/download\/v?([0-9][^/]*)/);
-      if (!match) return;
-      if (verEl) verEl.textContent = 'v' + match[1];
-      if (termVer) termVer.textContent = 'v' + match[1];
-    }
-
-    if (!window.fetch) {
-      apply(FALLBACK);
-      return;
-    }
-
-    fetch('../../downloads/nrel-download-url.txt', { cache: 'no-store' })
-      .then(function (res) { return res.ok ? res.text() : Promise.reject(); })
-      .then(apply)
-      .catch(function () { apply(FALLBACK); });
-  })();
-</script>
 </body>
 </html>
