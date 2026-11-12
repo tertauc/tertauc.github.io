@@ -1,14 +1,6 @@
 /* ========================= 字体 ========================= */
 @font-face {
   font-family: "PingFangSC";
-  src: url("../../PingFangSC/PingFangSC-Light.ttf") format("truetype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "PingFangSC";
   src: url("../../PingFangSC/PingFangSC-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
@@ -66,7 +58,7 @@
   --bg-subtle: #0f131b;
   --surface: #12161f;
   --surface-2: #171c26;
-  --text: #e7ecf3;
+  --text: #dcdfe4;
   --text-muted: #929caa;
   --border: #232a36;
   --border-strong: #313a49;
@@ -89,7 +81,7 @@
     --bg-subtle: #0f131b;
     --surface: #12161f;
     --surface-2: #171c26;
-    --text: #e7ecf3;
+    --text: #dcdfe4;
     --text-muted: #929caa;
     --border: #232a36;
     --border-strong: #313a49;
@@ -586,13 +578,9 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 .modrinth-btn svg { width: 17px; height: 17px; }
 
-/* 深色模式：浅色文字在深底上视觉偏粗，正文下调一档；Modrinth 按钮用白色字 */
-[data-theme="dark"] body { font-weight: 300; }
-[data-theme="dark"] h1,
-[data-theme="dark"] .modrinth-btn {
-  -webkit-text-stroke-width: 0.5px;
-}
-[data-theme="dark"] .modrinth-btn { color: #ffffff; }
+/* 深色模式：亮字在深底上有光晕膨胀感，减弱标题描边并降低文字亮度，视觉上更细 */
+[data-theme="dark"] h1 { -webkit-text-stroke-width: 0.5px; }
+[data-theme="dark"] .modrinth-btn { -webkit-text-stroke-width: 0.3px; }
 
 .versions-heading {
   display: flex;
