@@ -1,28 +1,3 @@
-/* ========================= 字体 ========================= */
-@font-face {
-  font-family: "PingFangSC";
-  src: url("../../PingFangSC/PingFangSC-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "PingFangSC";
-  src: url("../../PingFangSC/PingFangSC-Semibold.ttf") format("truetype");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "PingFangSC";
-  src: url("../../PingFangSC/PingFangSC-Semibold.ttf") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 /* =========================================================
    主题变量：浅色为默认，深色通过 [data-theme="dark"] 覆盖
    未启用 JS 时由 prefers-color-scheme 兜底自动识别
@@ -112,8 +87,8 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: "PingFangSC", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Roboto, Helvetica,
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI",
+    "Hiragino Sans GB", "Microsoft YaHei", Roboto, Helvetica,
     Arial, sans-serif;
   font-size: 16px;
   line-height: 1.7;
