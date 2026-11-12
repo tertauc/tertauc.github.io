@@ -122,6 +122,12 @@ body {
 
 
 h1, h2, h3 { line-height: 1.25; margin: 0; letter-spacing: -0.01em; }
+/* 苹方目录里最粗只到 Semibold，标题与 Modrinth 按钮显式用该字重，并用同色描边补足粗细 */
+h1,
+.modrinth-btn {
+  font-weight: 600;
+  -webkit-text-stroke: 0.8px currentColor;
+}
 p { margin: 0; }
 a { color: var(--accent); text-decoration: none; }
 ul { margin: 0; padding: 0; list-style: none; }
@@ -287,6 +293,43 @@ ul { margin: 0; padding: 0; list-style: none; }
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 18px;
+}
+
+/* 首页固定三列（GitHub 置顶仓库式），不足三个也不拉伸 */
+.project-grid--pins {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.section-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: fit-content;
+  margin: 20px auto 0;
+  padding: 9px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+.section-more:hover {
+  text-decoration: none;
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+.section-more:active { transform: scale(0.97); }
+.section-more svg { width: 15px; height: 15px; }
+.project-icon svg { width: 22px; height: 22px; }
+
+@media (max-width: 860px) {
+  .project-grid--pins { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .project-grid--pins { grid-template-columns: minmax(0, 1fr); }
 }
 
 .project {

@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <!-- 背景主渐变：青色 → 靛蓝 -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#6366F1"/>
+    </linearGradient>
+
+    <!-- 顶部高光 -->
+    <radialGradient id="sheen" cx="30%" cy="15%" r="80%">
+      <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.28"/>
+      <stop offset="50%"  stop-color="#FFFFFF" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- 底部暗角 -->
+    <linearGradient id="bottomShade" x1="0%" y1="100%" x2="0%" y2="30%">
+      <stop offset="0%"   stop-color="#312E81" stop-opacity="0.50"/>
+      <stop offset="100%" stop-color="#312E81" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- 内边缘高光 -->
+    <linearGradient id="rim" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#FFFFFF" stop-opacity="0.55"/>
+      <stop offset="50%"  stop-color="#FFFFFF" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.02"/>
+    </linearGradient>
+
+    <!-- 表盘色：白 → 淡青，userSpaceOnUse 共享 -->
+    <linearGradient id="fg" gradientUnits="userSpaceOnUse"
+                    x1="256" y1="88" x2="256" y2="424">
+      <stop offset="0%"   stop-color="#FFFFFF"/>
+      <stop offset="55%"  stop-color="#ECFEFF"/>
+      <stop offset="100%" stop-color="#A5F3FC"/>
+    </linearGradient>
+
+    <!-- 表盘投影 -->
+    <filter id="dialShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14"
+                    flood-color="#1E3A8A" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- 背景：四层叠加出体积感 -->
+  <rect width="512" height="512" rx="116" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="116" fill="url(#bottomShade)"/>
+  <rect width="512" height="512" rx="116" fill="url(#sheen)"/>
+  <rect x="3" y="3" width="506" height="506" rx="113"
+        fill="none" stroke="url(#rim)" stroke-width="3"/>
+
+  <!-- 表盘外圈：加粗 -->
+  <circle cx="256" cy="256" r="168"
+          fill="none" stroke="url(#fg)" stroke-width="18"
+          filter="url(#dialShadow)"/>
+
+  <!-- 四刻度（12/3/6/9）：加粗，与外圈保持间隙 -->
+  <g stroke="url(#fg)" stroke-width="18" stroke-linecap="round">
+    <!-- 12 点：外端 r=138，内端 r=106 -->
+    <line x1="256" y1="118" x2="256" y2="150"/>
+    <!-- 3 点 -->
+    <line x1="394" y1="256" x2="362" y2="256"/>
+    <!-- 6 点 -->
+    <line x1="256" y1="394" x2="256" y2="362"/>
+    <!-- 9 点 -->
+    <line x1="118" y1="256" x2="150" y2="256"/>
+  </g>
+
+  <!-- 指针：10:37，时针 318.5°、分针 222°；线宽再加粗 -->
+  <g stroke="url(#fg)" stroke-linecap="round">
+    <!-- 时针：短粗，指向左上 10–11 点之间 -->
+    <line x1="256" y1="256" x2="195" y2="187" stroke-width="24"/>
+    <!-- 分针：长细，指向左下 7–8 点之间 -->
+    <line x1="256" y1="256" x2="166" y2="356" stroke-width="17"/>
+  </g>
+
+  <!-- 中心圆点 -->
+  <circle cx="256" cy="256" r="20" fill="url(#fg)"/>
+</svg>

@@ -45,7 +45,7 @@
 
   .time-stage {
     position: fixed;
-    inset: 0;
+    inset: var(--header-h) 0 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -97,56 +97,46 @@
   }
 
   /* ---------- 角落控件 ---------- */
-  .corner {
-    position: fixed;
-    top: 18px;
-    z-index: 10;
-  }
-  .corner--left { left: 22px; }
-  .corner--right { right: 22px; }
-  .corner .back-link { margin-bottom: 0; }
-
   @media (prefers-reduced-motion: reduce) {
     .clock .colon { animation: none; }
   }
 
   @media (max-width: 600px) {
     .time-stage { gap: 14px; padding: 20px; }
-    .corner--left { left: 16px; }
-    .corner--right { right: 16px; }
     .date-line { letter-spacing: 0.08em; }
   }
 </style>
 </head>
 <body>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="../" aria-label="淂纛羙秹 首页">
+      <img class="brand-avatar" src="../assets/images/avatar.png" alt="" width="30" height="30">
+      <span class="brand-name">淂纛羙秹</span>
+    </a>
+
+    <!-- 主题切换：自动 → 浅色 → 深色 循环 -->
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换主题">
+      <svg class="theme-icon" data-mode="auto" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="2.5" y="4" width="19" height="13" rx="2.5"/>
+        <path d="M8.5 20.5h7M12 17v3.5"/>
+      </svg>
+      <svg class="theme-icon" data-mode="light" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle cx="12" cy="12" r="4.2"/>
+        <path d="M12 2.6v2.2M12 19.2v2.2M4.4 4.4l1.6 1.6M18 18l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.4 19.6 6 18M18 6l1.6-1.6"/>
+      </svg>
+      <svg class="theme-icon" data-mode="dark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
 <div class="time-stage">
   <div class="clock" id="clock" role="timer" aria-live="off">
     <span id="clock-h">--</span><span class="colon">:</span><span id="clock-m">--</span><span class="colon">:</span><span id="clock-s">--</span>
   </div>
   <p class="date-line" id="date-line">正在读取日期…</p>
-</div>
-
-<a class="back-link corner corner--left" href="../">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <path d="M19 12H5M11 18l-6-6 6-6"/>
-  </svg>
-  返回首页
-</a>
-
-<div class="corner corner--right">
-  <button id="theme-toggle" class="theme-toggle" type="button" aria-label="切换主题">
-    <svg class="theme-icon" data-mode="auto" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <rect x="2.5" y="4" width="19" height="13" rx="2.5"/>
-      <path d="M8.5 20.5h7M12 17v3.5"/>
-    </svg>
-    <svg class="theme-icon" data-mode="light" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <circle cx="12" cy="12" r="4.2"/>
-      <path d="M12 2.6v2.2M12 19.2v2.2M4.4 4.4l1.6 1.6M18 18l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.4 19.6 6 18M18 6l1.6-1.6"/>
-    </svg>
-    <svg class="theme-icon" data-mode="dark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7Z"/>
-    </svg>
-  </button>
 </div>
 
 <script src="../assets/js/main.js" defer></script>
