@@ -85,6 +85,9 @@ html {
 
 body {
   margin: 0;
+  /* 为固定顶栏留出高度；clip 不创建滚动容器，页面滚动保持原样 */
+  padding-top: var(--header-h);
+  overflow-x: clip;
   background: var(--bg);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI",
@@ -135,8 +138,10 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 /* ========================= 顶栏 ========================= */
 .site-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 50;
   background: var(--bg);
   background: color-mix(in srgb, var(--bg) 82%, transparent);
