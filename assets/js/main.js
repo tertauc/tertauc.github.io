@@ -105,7 +105,8 @@
 
     function applyFilter(value) {
       Array.prototype.forEach.call(versionRows, function (row) {
-        row.hidden = value !== 'all' && row.getAttribute('data-game') !== value;
+        var games = (row.getAttribute('data-game') || '').split(/\s+/);
+        row.hidden = value !== 'all' && games.indexOf(value) === -1;
       });
     }
 
