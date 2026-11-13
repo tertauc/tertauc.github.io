@@ -90,12 +90,12 @@
       <div class="versions-heading">
         <h2 id="versions-title">选择版本</h2>
         <div class="version-filter" id="version-filter">
-          <button class="version-filter-btn" id="version-filter-btn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="version-filter-menu">
-            <span class="version-filter-value" id="version-filter-value">全部版本</span>
+          <div class="version-filter-btn" id="version-filter-btn">
+            <input class="version-filter-value" id="version-filter-value" type="text" autocomplete="off" spellcheck="false" value="全部版本" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="version-filter-menu" aria-label="搜索或选择游戏版本">
             <svg class="version-filter-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="m6.5 9.5 5.5 5.5 5.5-5.5"/>
             </svg>
-          </button>
+          </div>
           <div class="version-filter-menu" id="version-filter-menu" role="listbox" aria-label="游戏版本" hidden>
             <button class="version-filter-option is-selected" type="button" role="option" aria-selected="true" data-value="all">
               <span>全部版本</span>
@@ -201,6 +201,48 @@
             </button>
             <button class="version-filter-option" type="button" role="option" aria-selected="false" data-value="1.21">
               <span>1.21</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m5 12.5 4.5 4.5L19 7.5"/>
+              </svg>
+            </button>
+            <button class="version-filter-option" type="button" role="option" aria-selected="false" data-value="1.20.6">
+              <span>1.20.6</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m5 12.5 4.5 4.5L19 7.5"/>
+              </svg>
+            </button>
+            <button class="version-filter-option" type="button" role="option" aria-selected="false" data-value="1.20.5">
+              <span>1.20.5</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m5 12.5 4.5 4.5L19 7.5"/>
+              </svg>
+            </button>
+            <button class="version-filter-option" type="button" role="option" aria-selected="false" data-value="1.20.4">
+              <span>1.20.4</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m5 12.5 4.5 4.5L19 7.5"/>
+              </svg>
+            </button>
+            <button class="version-filter-option" type="button" role="option" aria-selected="false" data-value="1.20.3">
+              <span>1.20.3</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m5 12.5 4.5 4.5L19 7.5"/>
+              </svg>
+            </button>
+            <button class="version-filter-option" type="button" role="option" aria-selected="false" data-value="1.20.2">
+              <span>1.20.2</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m5 12.5 4.5 4.5L19 7.5"/>
+              </svg>
+            </button>
+            <button class="version-filter-option" type="button" role="option" aria-selected="false" data-value="1.20.1">
+              <span>1.20.1</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m5 12.5 4.5 4.5L19 7.5"/>
+              </svg>
+            </button>
+            <button class="version-filter-option" type="button" role="option" aria-selected="false" data-value="1.20">
+              <span>1.20</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="m5 12.5 4.5 4.5L19 7.5"/>
               </svg>
@@ -354,6 +396,45 @@
           <span class="v-game"><span class="game-pill">1.21~1.21.1</span></span>
           <span class="v-date">2026年11月13日</span>
           <a class="v-download" href="../../downloads/Gunmu-mc1.21.zip" download="Gunmu-mc1.21.zip" aria-label="下载 Gunmu-mc1.21.zip（版本 0.1.0，Minecraft 1.21~1.21.1）">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 4v9m0 0 3.5-3.5M12 13 8.5 9.5"/>
+              <path d="M4.5 15.5v2.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-2.5"/>
+            </svg>
+          </a>
+        </div>
+
+        <div class="versions-row" data-game="1.20.5 1.20.6">
+          <span class="v-file">Gunmu-mc1.20.5.zip</span>
+          <span class="v-name">0.1.0</span>
+          <span class="v-game"><span class="game-pill">1.20.5~1.20.6</span></span>
+          <span class="v-date">2026年11月13日</span>
+          <a class="v-download" href="../../downloads/Gunmu-mc1.20.5.zip" download="Gunmu-mc1.20.5.zip" aria-label="下载 Gunmu-mc1.20.5.zip（版本 0.1.0，Minecraft 1.20.5~1.20.6）">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 4v9m0 0 3.5-3.5M12 13 8.5 9.5"/>
+              <path d="M4.5 15.5v2.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-2.5"/>
+            </svg>
+          </a>
+        </div>
+
+        <div class="versions-row" data-game="1.20.3 1.20.4">
+          <span class="v-file">Gunmu-mc1.20.3.zip</span>
+          <span class="v-name">0.1.0</span>
+          <span class="v-game"><span class="game-pill">1.20.3~1.20.4</span></span>
+          <span class="v-date">2026年11月13日</span>
+          <a class="v-download" href="../../downloads/Gunmu-mc1.20.3.zip" download="Gunmu-mc1.20.3.zip" aria-label="下载 Gunmu-mc1.20.3.zip（版本 0.1.0，Minecraft 1.20.3~1.20.4）">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 4v9m0 0 3.5-3.5M12 13 8.5 9.5"/>
+              <path d="M4.5 15.5v2.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-2.5"/>
+            </svg>
+          </a>
+        </div>
+
+        <div class="versions-row" data-game="1.20 1.20.1 1.20.2">
+          <span class="v-file">Gunmu-mc1.20.2.zip</span>
+          <span class="v-name">0.1.0</span>
+          <span class="v-game"><span class="game-pill">1.20~1.20.2</span></span>
+          <span class="v-date">2026年11月13日</span>
+          <a class="v-download" href="../../downloads/Gunmu-mc1.20.2.zip" download="Gunmu-mc1.20.2.zip" aria-label="下载 Gunmu-mc1.20.2.zip（版本 0.1.0，Minecraft 1.20~1.20.2）">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M12 4v9m0 0 3.5-3.5M12 13 8.5 9.5"/>
               <path d="M4.5 15.5v2.5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-2.5"/>

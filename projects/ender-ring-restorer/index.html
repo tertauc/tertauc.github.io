@@ -84,12 +84,12 @@
       <div class="versions-heading">
         <h2 id="versions-title">选择版本</h2>
         <div class="version-filter" id="version-filter">
-          <button class="version-filter-btn" id="version-filter-btn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="version-filter-menu">
-            <span class="version-filter-value" id="version-filter-value">全部版本</span>
+          <div class="version-filter-btn" id="version-filter-btn">
+            <input class="version-filter-value" id="version-filter-value" type="text" autocomplete="off" spellcheck="false" value="全部版本" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="version-filter-menu" aria-label="搜索或选择游戏版本">
             <svg class="version-filter-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="m6.5 9.5 5.5 5.5 5.5-5.5"/>
             </svg>
-          </button>
+          </div>
           <div class="version-filter-menu" id="version-filter-menu" role="listbox" aria-label="游戏版本" hidden>
             <button class="version-filter-option is-selected" type="button" role="option" aria-selected="true" data-value="all">
               <span>全部版本</span>

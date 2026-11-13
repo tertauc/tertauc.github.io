@@ -590,6 +590,20 @@ ul { margin: 0; padding: 0; list-style: none; }
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
+.version-filter-value {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  outline: none;
+  cursor: text;
+}
+.version-filter-value::placeholder { color: var(--text-muted); font-weight: 400; }
 .version-filter-btn:hover {
   background: var(--surface-2);
   border-color: var(--border-strong);
@@ -621,7 +635,21 @@ ul { margin: 0; padding: 0; list-style: none; }
   border-radius: 12px;
   box-shadow: var(--shadow-hover);
   animation: filter-in 0.16s ease;
+  /* 高度随屏幕自适应：最多占视口一半，超出后内部滚动 */
+  max-height: min(50dvh, 420px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }
+.version-filter-menu::-webkit-scrollbar { width: 8px; }
+.version-filter-menu::-webkit-scrollbar-track { background: transparent; }
+.version-filter-menu::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border: 2px solid var(--surface);
+  border-radius: 999px;
+}
+.version-filter-menu::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 .version-filter-menu[hidden] { display: none; }
 @keyframes filter-in {
   from { opacity: 0; transform: translateY(-4px); }
@@ -646,6 +674,8 @@ ul { margin: 0; padding: 0; list-style: none; }
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 .version-filter-option:hover { background: var(--accent-soft); }
+.version-filter-option[hidden] { display: none; }
+.version-filter-option.is-active { background: var(--accent-soft); }
 .version-filter-option svg {
   width: 15px;
   height: 15px;

@@ -94,7 +94,7 @@
     });
   });
 
-  /* ---------------- 版本页：按游戏版本过滤 ---------------- */
+  /* ---------------- 版本页：可输入 + 可选下拉筛选 ---------------- */
   var versionFilter = document.getElementById('version-filter');
   if (versionFilter) {
     var filterBtn = document.getElementById('version-filter-btn');
@@ -102,6 +102,14 @@
     var filterValue = document.getElementById('version-filter-value');
     var filterOptions = versionFilter.querySelectorAll('.version-filter-option');
     var versionRows = document.querySelectorAll('.versions-row[data-game]');
+    var currentValue = 'all';
+    var currentLabel = filterValue.value || '全部版本';
+    var activeIndex = -1;
+
+    function optionLabel(option) {
+      var span = option.querySelector('span');
+      return span ? span.textContent : option.getAttribute('data-value');
+    }
 
     function applyFilter(value) {
       Array.prototype.forEach.call(versionRows, function (row) {
@@ -113,36 +121,123 @@
     function setFilterOpen(open) {
       versionFilter.classList.toggle('is-open', open);
       filterBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      filterValue.setAttribute('aria-expanded', open ? 'true' : 'false');
       filterMenu.hidden = !open;
     }
 
-    filterBtn.addEventListener('click', function () {
-      setFilterOpen(filterMenu.hidden);
+    function visibleOptions() {
+      return Array.prototype.filter.call(filterOptions, function (option) {
+        return !option.hidden;
+      });
+    }
+
+    function selectOption(option) {
+      Array.prototype.forEach.call(filterOptions, function (item) {
+        var selected = item === option;
+        item.classList.toggle('is-selected', selected);
+        item.setAttribute('aria-selected', selected ? 'true' : 'false');
+        item.classList.remove('is-active');
+        item.hidden = false;
+      });
+      currentValue = option.getAttribute('data-value');
+      currentLabel = optionLabel(option);
+      filterValue.value = currentLabel;
+      applyFilter(currentValue);
+      activeIndex = -1;
+      setFilterOpen(false);
+    }
+
+    /* 关闭时恢复当前已选版本，不保留临时输入 */
+    function resetFilterLabel() {
+      filterValue.value = currentLabel;
+      Array.prototype.forEach.call(filterOptions, function (option) {
+        option.hidden = false;
+        option.classList.remove('is-active');
+      });
+      activeIndex = -1;
+      applyFilter(currentValue);
+    }
+
+    function filterOptionsBy(query) {
+      Array.prototype.forEach.call(filterOptions, function (option) {
+        option.hidden = query !== '' && optionLabel(option).toLowerCase().indexOf(query) === -1;
+        option.classList.remove('is-active');
+      });
+      activeIndex = -1;
+    }
+
+    filterBtn.addEventListener('click', function (event) {
+      if (event.target === filterValue) {
+        if (filterMenu.hidden) setFilterOpen(true);
+        filterValue.select();
+        return;
+      }
+      if (filterMenu.hidden) {
+        setFilterOpen(true);
+        filterValue.focus();
+        filterValue.select();
+      } else {
+        setFilterOpen(false);
+        resetFilterLabel();
+      }
+    });
+
+    filterValue.addEventListener('focus', function () {
+      setFilterOpen(true);
+      filterValue.select();
+    });
+
+    filterValue.addEventListener('input', function () {
+      var query = filterValue.value.trim().toLowerCase();
+      filterOptionsBy(query);
+      setFilterOpen(true);
+    });
+
+    filterValue.addEventListener('blur', function () {
+      window.setTimeout(function () {
+        if (!versionFilter.contains(document.activeElement)) {
+          setFilterOpen(false);
+          resetFilterLabel();
+        }
+      }, 0);
+    });
+
+    filterValue.addEventListener('keydown', function (event) {
+      var list = visibleOptions();
+
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        if (!list.length) return;
+        event.preventDefault();
+        if (event.key === 'ArrowDown') {
+          activeIndex = Math.min(activeIndex + 1, list.length - 1);
+        } else {
+          activeIndex = Math.max(activeIndex - 1, 0);
+        }
+        Array.prototype.forEach.call(list, function (option, index) {
+          option.classList.toggle('is-active', index === activeIndex);
+        });
+        list[activeIndex].scrollIntoView({ block: 'nearest' });
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        var pick = list[activeIndex >= 0 ? activeIndex : 0];
+        if (pick) selectOption(pick);
+      } else if (event.key === 'Escape') {
+        setFilterOpen(false);
+        resetFilterLabel();
+        filterValue.blur();
+      }
     });
 
     Array.prototype.forEach.call(filterOptions, function (option) {
       option.addEventListener('click', function () {
-        var value = option.getAttribute('data-value');
-        Array.prototype.forEach.call(filterOptions, function (item) {
-          var selected = item === option;
-          item.classList.toggle('is-selected', selected);
-          item.setAttribute('aria-selected', selected ? 'true' : 'false');
-        });
-        filterValue.textContent = option.querySelector('span').textContent;
-        applyFilter(value);
-        setFilterOpen(false);
-        filterBtn.focus();
+        selectOption(option);
       });
     });
 
     document.addEventListener('click', function (event) {
-      if (!versionFilter.contains(event.target)) setFilterOpen(false);
-    });
-
-    document.addEventListener('keydown', function (event) {
-      if (event.key === 'Escape' && !filterMenu.hidden) {
+      if (!versionFilter.contains(event.target)) {
         setFilterOpen(false);
-        filterBtn.focus();
+        resetFilterLabel();
       }
     });
   }
