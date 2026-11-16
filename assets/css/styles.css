@@ -741,6 +741,13 @@ ul { margin: 0; padding: 0; list-style: none; }
   font-variant-numeric: tabular-nums;
 }
 
+.v-game {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  align-items: center;
+}
+
 .game-pill {
   display: inline-block;
   padding: 3px 10px;
