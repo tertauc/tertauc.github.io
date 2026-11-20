@@ -472,8 +472,20 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 /* ========================= 页脚 ========================= */
 .site-footer {
-  border-top: 1px solid var(--border);
+  /* 固定定位：随滚动平移到文档末尾位置（看起来和普通页脚一样），到底后贴住视口底部不再上移 */
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 45;
   padding: 24px 0;
+  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-top: 1px solid var(--border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  will-change: transform;
 }
 .footer-inner {
   color: var(--text-muted);

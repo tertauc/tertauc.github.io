@@ -263,4 +263,24 @@
   /* ---------------- 页脚年份 ---------------- */
   var yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+
+  /* ---------------- 页脚：随滚动出现，到底后贴住视口底部 ---------------- */
+  var footer = document.querySelector('.site-footer');
+  if (footer) {
+    var updateFooter = function () {
+      /* 文档底部超出视口底部的距离；为 0 时页脚正好贴在视口底部 */
+      var gap = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
+      footer.style.transform = 'translateY(' + Math.max(0, gap) + 'px)';
+    };
+    var syncFooterSpace = function () {
+      /* 页脚脱离文档流，用 body 内边距补上它的高度，保证页面总长度不变 */
+      document.body.style.paddingBottom = footer.offsetHeight + 'px';
+      updateFooter();
+    };
+
+    window.addEventListener('scroll', updateFooter, { passive: true });
+    window.addEventListener('resize', syncFooterSpace);
+    window.addEventListener('load', syncFooterSpace);
+    syncFooterSpace();
+  }
 })();
