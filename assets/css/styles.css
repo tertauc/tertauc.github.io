@@ -24,6 +24,8 @@
   --radius-sm: 10px;
   --maxw: 960px;
   --header-h: 64px;
+  --scroll-thumb: rgba(20, 22, 26, 0.28);
+  --scroll-thumb-hover: rgba(20, 22, 26, 0.48);
 
   color-scheme: light;
 }
@@ -45,6 +47,8 @@
   --scrim: rgba(3, 5, 9, 0.66);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 14px 32px -20px rgba(0, 0, 0, 0.85);
   --shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.5), 0 20px 40px -20px rgba(0, 0, 0, 0.9);
+  --scroll-thumb: rgba(255, 255, 255, 0.26);
+  --scroll-thumb-hover: rgba(255, 255, 255, 0.46);
 
   color-scheme: dark;
 }
@@ -68,6 +72,8 @@
     --scrim: rgba(3, 5, 9, 0.66);
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 14px 32px -20px rgba(0, 0, 0, 0.85);
     --shadow-hover: 0 2px 6px rgba(0, 0, 0, 0.5), 0 20px 40px -20px rgba(0, 0, 0, 0.9);
+    --scroll-thumb: rgba(255, 255, 255, 0.26);
+    --scroll-thumb-hover: rgba(255, 255, 255, 0.46);
     color-scheme: dark;
   }
 }
@@ -81,7 +87,21 @@ html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-thumb) transparent;
 }
+
+/* 自定义滚动条：细窄、圆角、无轨道，悬停加深 */
+html::-webkit-scrollbar { width: 12px; height: 12px; }
+html::-webkit-scrollbar-track { background: transparent; }
+html::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+html::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); background-clip: content-box; }
+html::-webkit-scrollbar-corner { background: transparent; }
 
 body {
   margin: 0;
@@ -499,16 +519,35 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 
 .back-link {
+  /* 固定在左上角（顶栏下方），不随滚动移动 */
+  position: fixed;
+  top: calc(var(--header-h) + 14px);
+  left: max(24px, calc((100% - var(--maxw)) / 2 + 24px));
+  z-index: 45;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 26px;
+  padding: 7px 14px 7px 11px;
   font-size: 14px;
+  line-height: 1.2;
   color: var(--text-muted);
-  transition: color 0.2s ease;
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  backdrop-filter: saturate(180%) blur(10px);
+  -webkit-backdrop-filter: saturate(180%) blur(10px);
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
-.back-link:hover { color: var(--accent); }
-.back-link svg { width: 17px; height: 17px; }
+.back-link:hover {
+  color: var(--accent);
+  border-color: var(--border-strong);
+  text-decoration: none;
+}
+.back-link svg { width: 17px; height: 17px; flex: 0 0 auto; }
+
+/* 按钮脱离文档流后，为紧随其后的内容补回原来的垂直间距 */
+.back-link + * { margin-top: 46px; }
 
 .pack-head {
   display: flex;
@@ -831,6 +870,9 @@ ul { margin: 0; padding: 0; list-style: none; }
   transition: opacity 0.7s cubic-bezier(0.2, 0.7, 0.3, 1),
     transform 0.7s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
+
+/* 含固定返回按钮的区块不做位移动画，避免其 transform 改变按钮的定位参照 */
+.js .reveal:has(.back-link) { transform: none; }
 
 /* ========================= 响应式 ========================= */
 @media (max-width: 720px) {

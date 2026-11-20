@@ -4,24 +4,24 @@
    2) 项目卡片提示
    ========================================================= */
 (function () {
-  'use strict';
+  "use strict";
 
   var root = document.documentElement;
-  var STORAGE_KEY = 'theme-preference';
-  var MODES = ['auto', 'light', 'dark'];
-  var LABELS = { auto: '跟随系统', light: '浅色', dark: '深色' };
-  var THEME_COLORS = { light: '#ffffff', dark: '#0b0e14' };
-  var media = window.matchMedia('(prefers-color-scheme: dark)');
+  var STORAGE_KEY = "theme-preference";
+  var MODES = ["auto", "light", "dark"];
+  var LABELS = { auto: "跟随系统", light: "浅色", dark: "深色" };
+  var THEME_COLORS = { light: "#ffffff", dark: "#0b0e14" };
+  var media = window.matchMedia("(prefers-color-scheme: dark)");
 
   /* ---------------- 主题 ---------------- */
-  var toggle = document.getElementById('theme-toggle');
+  var toggle = document.getElementById("theme-toggle");
 
   function readMode() {
     try {
       var saved = localStorage.getItem(STORAGE_KEY);
-      return MODES.indexOf(saved) !== -1 ? saved : 'auto';
+      return MODES.indexOf(saved) !== -1 ? saved : "auto";
     } catch (e) {
-      return 'auto';
+      return "auto";
     }
   }
 
@@ -30,20 +30,20 @@
   }
 
   function resolveMode(mode) {
-    return mode === 'auto' ? (media.matches ? 'dark' : 'light') : mode;
+    return mode === "auto" ? (media.matches ? "dark" : "light") : mode;
   }
 
   function renderTheme(mode) {
     var resolved = resolveMode(mode);
-    root.setAttribute('data-theme', resolved);
-    root.setAttribute('data-theme-mode', mode);
+    root.setAttribute("data-theme", resolved);
+    root.setAttribute("data-theme-mode", mode);
 
-    var meta = document.getElementById('meta-theme-color');
-    if (meta) meta.setAttribute('content', THEME_COLORS[resolved]);
+    var meta = document.getElementById("meta-theme-color");
+    if (meta) meta.setAttribute("content", THEME_COLORS[resolved]);
 
     if (toggle) {
-      var label = '主题：' + LABELS[mode] + '（点击切换）';
-      toggle.setAttribute('aria-label', label);
+      var label = "主题：" + LABELS[mode] + "（点击切换）";
+      toggle.setAttribute("aria-label", label);
       toggle.title = label;
     }
   }
@@ -52,7 +52,7 @@
   renderTheme(mode);
 
   if (toggle) {
-    toggle.addEventListener('click', function () {
+    toggle.addEventListener("click", function () {
       mode = MODES[(MODES.indexOf(mode) + 1) % MODES.length];
       saveMode(mode);
       renderTheme(mode);
@@ -60,68 +60,68 @@
   }
 
   function onSystemChange() {
-    if (mode === 'auto') renderTheme(mode);
+    if (mode === "auto") renderTheme(mode);
   }
-  if (typeof media.addEventListener === 'function') {
-    media.addEventListener('change', onSystemChange);
-  } else if (typeof media.addListener === 'function') {
+  if (typeof media.addEventListener === "function") {
+    media.addEventListener("change", onSystemChange);
+  } else if (typeof media.addListener === "function") {
     media.addListener(onSystemChange);
   }
 
-  window.addEventListener('storage', function (event) {
+  window.addEventListener("storage", function (event) {
     if (event.key !== STORAGE_KEY) return;
     mode = readMode();
     renderTheme(mode);
   });
 
   /* ---------------- 项目卡片：暂未完成提示 ---------------- */
-  var toastEl = document.getElementById('toast');
+  var toastEl = document.getElementById("toast");
   var toastTimer = null;
 
   function showToast(message) {
     if (!toastEl) return;
     toastEl.textContent = message;
-    toastEl.classList.add('is-visible');
+    toastEl.classList.add("is-visible");
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () {
-      toastEl.classList.remove('is-visible');
+      toastEl.classList.remove("is-visible");
     }, 2000);
   }
 
-  Array.prototype.forEach.call(document.querySelectorAll('button.project'), function (card) {
-    card.addEventListener('click', function () {
-      showToast('还没做完');
+  Array.prototype.forEach.call(document.querySelectorAll("button.project"), function (card) {
+    card.addEventListener("click", function () {
+      showToast("还没做完");
     });
   });
 
   /* ---------------- 版本页：可输入 + 可选下拉筛选 ---------------- */
-  var versionFilter = document.getElementById('version-filter');
+  var versionFilter = document.getElementById("version-filter");
   if (versionFilter) {
-    var filterBtn = document.getElementById('version-filter-btn');
-    var filterMenu = document.getElementById('version-filter-menu');
-    var filterValue = document.getElementById('version-filter-value');
-    var filterOptions = versionFilter.querySelectorAll('.version-filter-option');
-    var versionRows = document.querySelectorAll('.versions-row[data-game]');
-    var currentValue = 'all';
-    var currentLabel = filterValue.value || '全部版本';
+    var filterBtn = document.getElementById("version-filter-btn");
+    var filterMenu = document.getElementById("version-filter-menu");
+    var filterValue = document.getElementById("version-filter-value");
+    var filterOptions = versionFilter.querySelectorAll(".version-filter-option");
+    var versionRows = document.querySelectorAll(".versions-row[data-game]");
+    var currentValue = "all";
+    var currentLabel = filterValue.value || "全部版本";
     var activeIndex = -1;
 
     function optionLabel(option) {
-      var span = option.querySelector('span');
-      return span ? span.textContent : option.getAttribute('data-value');
+      var span = option.querySelector("span");
+      return span ? span.textContent : option.getAttribute("data-value");
     }
 
     function applyFilter(value) {
       Array.prototype.forEach.call(versionRows, function (row) {
-        var games = (row.getAttribute('data-game') || '').split(/\s+/);
-        row.hidden = value !== 'all' && games.indexOf(value) === -1;
+        var games = (row.getAttribute("data-game") || "").split(/\s+/);
+        row.hidden = value !== "all" && games.indexOf(value) === -1;
       });
     }
 
     function setFilterOpen(open) {
-      versionFilter.classList.toggle('is-open', open);
-      filterBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      filterValue.setAttribute('aria-expanded', open ? 'true' : 'false');
+      versionFilter.classList.toggle("is-open", open);
+      filterBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      filterValue.setAttribute("aria-expanded", open ? "true" : "false");
       filterMenu.hidden = !open;
     }
 
@@ -134,12 +134,12 @@
     function selectOption(option) {
       Array.prototype.forEach.call(filterOptions, function (item) {
         var selected = item === option;
-        item.classList.toggle('is-selected', selected);
-        item.setAttribute('aria-selected', selected ? 'true' : 'false');
-        item.classList.remove('is-active');
+        item.classList.toggle("is-selected", selected);
+        item.setAttribute("aria-selected", selected ? "true" : "false");
+        item.classList.remove("is-active");
         item.hidden = false;
       });
-      currentValue = option.getAttribute('data-value');
+      currentValue = option.getAttribute("data-value");
       currentLabel = optionLabel(option);
       filterValue.value = currentLabel;
       applyFilter(currentValue);
@@ -152,7 +152,7 @@
       filterValue.value = currentLabel;
       Array.prototype.forEach.call(filterOptions, function (option) {
         option.hidden = false;
-        option.classList.remove('is-active');
+        option.classList.remove("is-active");
       });
       activeIndex = -1;
       applyFilter(currentValue);
@@ -160,13 +160,13 @@
 
     function filterOptionsBy(query) {
       Array.prototype.forEach.call(filterOptions, function (option) {
-        option.hidden = query !== '' && optionLabel(option).toLowerCase().indexOf(query) === -1;
-        option.classList.remove('is-active');
+        option.hidden = query !== "" && optionLabel(option).toLowerCase().indexOf(query) === -1;
+        option.classList.remove("is-active");
       });
       activeIndex = -1;
     }
 
-    filterBtn.addEventListener('click', function (event) {
+    filterBtn.addEventListener("click", function (event) {
       if (event.target === filterValue) {
         if (filterMenu.hidden) setFilterOpen(true);
         filterValue.select();
@@ -182,18 +182,18 @@
       }
     });
 
-    filterValue.addEventListener('focus', function () {
+    filterValue.addEventListener("focus", function () {
       setFilterOpen(true);
       filterValue.select();
     });
 
-    filterValue.addEventListener('input', function () {
+    filterValue.addEventListener("input", function () {
       var query = filterValue.value.trim().toLowerCase();
       filterOptionsBy(query);
       setFilterOpen(true);
     });
 
-    filterValue.addEventListener('blur', function () {
+    filterValue.addEventListener("blur", function () {
       window.setTimeout(function () {
         if (!versionFilter.contains(document.activeElement)) {
           setFilterOpen(false);
@@ -202,26 +202,26 @@
       }, 0);
     });
 
-    filterValue.addEventListener('keydown', function (event) {
+    filterValue.addEventListener("keydown", function (event) {
       var list = visibleOptions();
 
-      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
         if (!list.length) return;
         event.preventDefault();
-        if (event.key === 'ArrowDown') {
+        if (event.key === "ArrowDown") {
           activeIndex = Math.min(activeIndex + 1, list.length - 1);
         } else {
           activeIndex = Math.max(activeIndex - 1, 0);
         }
         Array.prototype.forEach.call(list, function (option, index) {
-          option.classList.toggle('is-active', index === activeIndex);
+          option.classList.toggle("is-active", index === activeIndex);
         });
-        list[activeIndex].scrollIntoView({ block: 'nearest' });
-      } else if (event.key === 'Enter') {
+        list[activeIndex].scrollIntoView({ block: "nearest" });
+      } else if (event.key === "Enter") {
         event.preventDefault();
         var pick = list[activeIndex >= 0 ? activeIndex : 0];
         if (pick) selectOption(pick);
-      } else if (event.key === 'Escape') {
+      } else if (event.key === "Escape") {
         setFilterOpen(false);
         resetFilterLabel();
         filterValue.blur();
@@ -229,12 +229,12 @@
     });
 
     Array.prototype.forEach.call(filterOptions, function (option) {
-      option.addEventListener('click', function () {
+      option.addEventListener("click", function () {
         selectOption(option);
       });
     });
 
-    document.addEventListener('click', function (event) {
+    document.addEventListener("click", function (event) {
       if (!versionFilter.contains(event.target)) {
         setFilterOpen(false);
         resetFilterLabel();
@@ -243,44 +243,44 @@
   }
 
   /* ---------------- 滚动显现 ---------------- */
-  var revealTargets = document.querySelectorAll('.reveal');
-  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var revealTargets = document.querySelectorAll(".reveal");
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  if ('IntersectionObserver' in window && !reduceMotion) {
+  if ("IntersectionObserver" in window && !reduceMotion) {
     var revealObserver = new IntersectionObserver(function (entries, observer) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
-        entry.target.classList.add('is-visible');
+        entry.target.classList.add("is-visible");
         observer.unobserve(entry.target);
       });
-    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.1 });
+    }, { rootMargin: "0px 0px -10% 0px", threshold: 0.1 });
 
     revealTargets.forEach(function (el) { revealObserver.observe(el); });
   } else {
-    revealTargets.forEach(function (el) { el.classList.add('is-visible'); });
+    revealTargets.forEach(function (el) { el.classList.add("is-visible"); });
   }
 
   /* ---------------- 页脚年份 ---------------- */
-  var yearEl = document.getElementById('year');
+  var yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
   /* ---------------- 页脚：随滚动出现，到底后贴住视口底部 ---------------- */
-  var footer = document.querySelector('.site-footer');
+  var footer = document.querySelector(".site-footer");
   if (footer) {
     var updateFooter = function () {
       /* 文档底部超出视口底部的距离；为 0 时页脚正好贴在视口底部 */
       var gap = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
-      footer.style.transform = 'translateY(' + Math.max(0, gap) + 'px)';
+      footer.style.transform = "translateY(" + Math.max(0, gap) + "px)";
     };
     var syncFooterSpace = function () {
       /* 页脚脱离文档流，用 body 内边距补上它的高度，保证页面总长度不变 */
-      document.body.style.paddingBottom = footer.offsetHeight + 'px';
+      document.body.style.paddingBottom = footer.offsetHeight + "px";
       updateFooter();
     };
 
-    window.addEventListener('scroll', updateFooter, { passive: true });
-    window.addEventListener('resize', syncFooterSpace);
-    window.addEventListener('load', syncFooterSpace);
+    window.addEventListener("scroll", updateFooter, { passive: true });
+    window.addEventListener("resize", syncFooterSpace);
+    window.addEventListener("load", syncFooterSpace);
     syncFooterSpace();
   }
 })();

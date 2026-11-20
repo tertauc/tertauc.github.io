@@ -11,25 +11,25 @@
 <script>
   /* 首帧绘制前确定主题与项目视图，避免闪烁 */
   (function () {
-    var KEY = 'theme-preference';
-    var mode = 'auto';
+    var KEY = "theme-preference";
+    var mode = "auto";
     try {
       var saved = localStorage.getItem(KEY);
-      if (saved === 'light' || saved === 'dark' || saved === 'auto') mode = saved;
+      if (saved === "light" || saved === "dark" || saved === "auto") mode = saved;
     } catch (e) {}
-    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var dark = mode === 'dark' || (mode === 'auto' && prefersDark);
+    var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var dark = mode === "dark" || (mode === "auto" && prefersDark);
     var root = document.documentElement;
-    root.setAttribute('data-theme', dark ? 'dark' : 'light');
-    root.setAttribute('data-theme-mode', mode);
+    root.setAttribute("data-theme", dark ? "dark" : "light");
+    root.setAttribute("data-theme-mode", mode);
 
-    var view = 'grid';
+    var view = "grid";
     try {
-      var savedView = localStorage.getItem('projects-view');
-      if (savedView === 'list' || savedView === 'grid') view = savedView;
+      var savedView = localStorage.getItem("projects-view");
+      if (savedView === "list" || savedView === "grid") view = savedView;
     } catch (e) {}
-    root.setAttribute('data-projects-view', view);
-    root.classList.add('js');
+    root.setAttribute("data-projects-view", view);
+    root.classList.add("js");
   })();
 </script>
 <link rel="stylesheet" href="../assets/css/styles.css">
@@ -264,7 +264,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M19 12H5M11 18l-6-6 6-6"/>
         </svg>
-        返回首页
+        返回
       </a>
 
       <div class="projects-head">
@@ -361,28 +361,28 @@
   /* 项目视图：卡片 / 列表，选择持久化 */
   (function () {
     var root = document.documentElement;
-    var KEY = 'projects-view';
-    var buttons = document.querySelectorAll('[data-view-btn]');
+    var KEY = "projects-view";
+    var buttons = document.querySelectorAll("[data-view-btn]");
     if (!buttons.length) return;
 
     function apply(view) {
-      root.setAttribute('data-projects-view', view);
+      root.setAttribute("data-projects-view", view);
       Array.prototype.forEach.call(buttons, function (btn) {
-        var active = btn.getAttribute('data-view-btn') === view;
-        btn.classList.toggle('is-active', active);
-        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        var active = btn.getAttribute("data-view-btn") === view;
+        btn.classList.toggle("is-active", active);
+        btn.setAttribute("aria-pressed", active ? "true" : "false");
       });
     }
 
     Array.prototype.forEach.call(buttons, function (btn) {
-      btn.addEventListener('click', function () {
-        var view = btn.getAttribute('data-view-btn');
+      btn.addEventListener("click", function () {
+        var view = btn.getAttribute("data-view-btn");
         try { localStorage.setItem(KEY, view); } catch (e) {}
         apply(view);
       });
     });
 
-    apply(root.getAttribute('data-projects-view') || 'grid');
+    apply(root.getAttribute("data-projects-view") || "grid");
   })();
 </script>
 </body>

@@ -11,18 +11,18 @@
 <script>
   /* 首帧绘制前确定主题，避免深浅色切换时闪烁（FOUC） */
   (function () {
-    var KEY = 'theme-preference';
-    var mode = 'auto';
+    var KEY = "theme-preference";
+    var mode = "auto";
     try {
       var saved = localStorage.getItem(KEY);
-      if (saved === 'light' || saved === 'dark' || saved === 'auto') mode = saved;
+      if (saved === "light" || saved === "dark" || saved === "auto") mode = saved;
     } catch (e) {}
-    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var dark = mode === 'dark' || (mode === 'auto' && prefersDark);
+    var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var dark = mode === "dark" || (mode === "auto" && prefersDark);
     var root = document.documentElement;
-    root.setAttribute('data-theme', dark ? 'dark' : 'light');
-    root.setAttribute('data-theme-mode', mode);
-    root.classList.add('js');
+    root.setAttribute("data-theme", dark ? "dark" : "light");
+    root.setAttribute("data-theme-mode", mode);
+    root.classList.add("js");
   })();
 </script>
 <link rel="stylesheet" href="../../assets/css/styles.css">
@@ -445,11 +445,11 @@
 <main id="main">
   <section class="nrel-hero reveal">
     <div class="wrap">
-      <a class="back-link" href="../../">
+      <a class="back-link" href="../">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M19 12H6M11 5.5 4.5 12l6.5 6.5"/>
         </svg>
-        <span>返回首页</span>
+        <span>返回</span>
       </a>
 
       <div class="nrel-grid">

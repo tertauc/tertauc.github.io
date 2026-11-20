@@ -11,18 +11,18 @@
 <script>
   /* 首帧绘制前确定主题，避免深浅色切换时闪烁（FOUC） */
   (function () {
-    var KEY = 'theme-preference';
-    var mode = 'auto';
+    var KEY = "theme-preference";
+    var mode = "auto";
     try {
       var saved = localStorage.getItem(KEY);
-      if (saved === 'light' || saved === 'dark' || saved === 'auto') mode = saved;
+      if (saved === "light" || saved === "dark" || saved === "auto") mode = saved;
     } catch (e) {}
-    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var dark = mode === 'dark' || (mode === 'auto' && prefersDark);
+    var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var dark = mode === "dark" || (mode === "auto" && prefersDark);
     var root = document.documentElement;
-    root.setAttribute('data-theme', dark ? 'dark' : 'light');
-    root.setAttribute('data-theme-mode', mode);
-    root.classList.add('js');
+    root.setAttribute("data-theme", dark ? "dark" : "light");
+    root.setAttribute("data-theme-mode", mode);
+    root.classList.add("js");
   })();
 </script>
 <link rel="stylesheet" href="assets/css/styles.css">
